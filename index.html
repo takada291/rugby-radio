@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ラグビーAIラジオ</title>
+
+  <!-- GA4 Tracking Code (ラグビーアプリ共通) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-8PJYQKC5F5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-8PJYQKC5F5');
+  </script>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-light: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #cbd5e1;
+      --green: #15803d;
+      --green-bright: #22c55e;
+      --red: #dc2626;
+      --amber: #d97706;
+      --blue: #2563eb;
+      --speakerA: #1d4ed8;
+      --speakerA-bg: #eff6ff;
+      --speakerB: #c2410c;
+      --speakerB-bg: #fff7ed;
+      --user-bg: #dcfce7;
+      --user-border: #86efac;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background-color: #f1f5f9;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* ヘッダー */
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #14532d 100%);
+      color: #fff;
+      padding: 10px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .onair-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #cbd5e1;
+    }
+
+    .onair-pill.live {
+      background: #dc2626;
+      border-color: #f87171;
+      color: #fff;
+      animation: pulse 1.4s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.65; }
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-voice {
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      padding: 5px 9px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-voice.muted {
+      background: rgba(15,23,42,0.5);
+      color: #94a3b8;
+    }
+
+    /* 残り生放送枠バー */
+    .quota-bar {
+      margin-top: 7px;
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 8px;
+      padding: 5px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.74rem;
+    }
+
+    .quota-text {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #e2e8f0;
+    }
+
+    .quota-num {
+      font-weight: 900;
+      color: #fde047;
+      font-size: 0.86rem;
+    }
+
+    .quota-num.low { color: #fb923c; }
+    .quota-num.empty { color: #f87171; }
+
+    .quota-note {
+      font-size: 0.67rem;
+      color: #cbd5e1;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 12px;
+      padding-bottom: 130px;
+    }
+
+    .test-banner {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.75rem;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    /* チャンネル切替タブ */
+    .channel-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .ch-tab {
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .ch-tab.active[data-ch="casual"] {
+      border-color: var(--green);
+      background: #f0fdf4;
+      box-shadow: 0 2px 6px rgba(21, 128, 61, 0.15);
+    }
+
+    .ch-tab.active[data-ch="heated"] {
+      border-color: var(--red);
+      background: #fef2f2;
+      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.15);
+    }
+
+    .ch-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .ch-desc {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* カード共通 */
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--bg);
+    }
+
+    .badge-free {
+      background: #dcfce7;
+      color: #166534;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+
+    .badge-api {
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+
+    /* お題リスト */
+    .topic-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+    }
+
+    .topic-item {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 11px;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.12s ease;
+      text-align: left;
+    }
+
+    .topic-item:hover {
+      border-color: #94a3b8;
+      background: #f8fafc;
+    }
+
+    .topic-item.playing {
+      border-color: var(--green);
+      background: #f0fdf4;
+    }
+
+    .topic-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .topic-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .play-pill {
+      flex-shrink: 0;
+      background: var(--bg);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
+    .topic-item.playing .play-pill {
+      background: var(--green);
+    }
+
+    /* 自由お題ボックス */
+    .custom-topic-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #cbd5e1;
+    }
+
+    .custom-topic-row input {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+
+    .btn-start-custom {
+      background: var(--amber);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-start-custom:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* ラジオブース（再生画面） */
+    #studio-section {
+      display: none;
+    }
+
+    .studio-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .studio-topic-label {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--bg);
+    }
+
+    .btn-back {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* 2人のパーソナリティステージ */
+    .stage {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 12px 10px;
+      margin-bottom: 10px;
+    }
+
+    .host-card {
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+      color: #cbd5e1;
+      transition: all 0.2s ease;
+    }
+
+    .host-card.speaking-a {
+      border-color: #60a5fa;
+      background: rgba(37, 99, 235, 0.25);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 0 14px rgba(96, 165, 250, 0.45);
+    }
+
+    .host-card.speaking-b {
+      border-color: #fb923c;
+      background: rgba(234, 88, 12, 0.25);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 0 14px rgba(251, 146, 60, 0.45);
+    }
+
+    .host-avatar {
+      font-size: 2rem;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .host-name {
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    .host-role {
+      font-size: 0.68rem;
+      opacity: 0.85;
+    }
+
+    .wave {
+      height: 12px;
+      margin-top: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 3px;
+      visibility: hidden;
+    }
+
+    .host-card.speaking-a .wave,
+    .host-card.speaking-b .wave {
+      visibility: visible;
+    }
+
+    .wave span {
+      display: block;
+      width: 3px;
+      height: 5px;
+      background: #fde047;
+      border-radius: 2px;
+      animation: eq 0.6s infinite ease-in-out alternate;
+    }
+
+    .wave span:nth-child(2) { animation-delay: 0.15s; }
+    .wave span:nth-child(3) { animation-delay: 0.3s; }
+    .wave span:nth-child(4) { animation-delay: 0.45s; }
+
+    @keyframes eq {
+      from { height: 3px; }
+      to { height: 12px; }
+    }
+
+    /* 再生コントロールバー */
+    .player-controls {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ctrl-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #1e293b;
+      cursor: pointer;
+    }
+
+    .ctrl-btn.primary {
+      background: var(--bg);
+      color: #fff;
+      border-color: var(--bg);
+    }
+
+    .speed-label {
+      margin-left: auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .speed-label select {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 5px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      background: #fff;
+    }
+
+    /* 会話ログ（字幕エリア） */
+    .chat-log {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      max-height: 46vh;
+      overflow-y: auto;
+      padding: 4px 2px;
+    }
+
+    .bubble {
+      max-width: 88%;
+      padding: 9px 12px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .bubble.a {
+      align-self: flex-start;
+      background: var(--speakerA-bg);
+      border-left: 4px solid var(--speakerA);
+    }
+
+    .bubble.b {
+      align-self: flex-end;
+      background: var(--speakerB-bg);
+      border-right: 4px solid var(--speakerB);
+    }
+
+    .bubble.user {
+      align-self: center;
+      width: 96%;
+      max-width: 96%;
+      background: var(--user-bg);
+      border: 1.5px solid var(--user-border);
+      text-align: left;
+    }
+
+    .bubble.system {
+      align-self: center;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+    }
+
+    .bubble-name {
+      font-size: 0.72rem;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .bubble.a .bubble-name { color: var(--speakerA); }
+    .bubble.b .bubble-name { color: var(--speakerB); }
+    .bubble.user .bubble-name { color: #166534; }
+
+    /* 下部固定 割り込みパネル */
+    .interrupt-dock {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border-top: 2px solid #cbd5e1;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
+      z-index: 40;
+      display: none;
+    }
+
+    .interrupt-inner {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 10px 12px;
+    }
+
+    .btn-hand-raise {
+      width: 100%;
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 0.98rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(21, 128, 61, 0.35);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-hand-raise:disabled {
+      background: #94a3b8;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .interrupt-form {
+      display: none;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 7px;
+    }
+
+    .chip-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    .chip-btn:active {
+      background: #cbd5e1;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .input-row input {
+      flex: 1;
+      border: 1.5px solid var(--green);
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 0.88rem;
+      font-family: inherit;
+    }
+
+    .btn-send-cutin {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-send-cutin:disabled {
+      background: #94a3b8;
+    }
+
+    .form-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 5px;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .btn-cancel-cutin {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="brand">
+      <h1>🎙️ ラグビーAIラジオ</h1>
+      <span class="onair-pill" id="onair-badge">STANDBY</span>
+    </div>
+    <div class="header-controls">
+      <button type="button" class="btn-voice" id="btn-voice-toggle">🔊 音声ON</button>
+    </div>
+  </div>
+  <div class="quota-bar">
+    <div class="quota-text">
+      <span>⚡ 本日の生放送枠:</span>
+      <span class="quota-num" id="quota-remaining">確認中...</span>
+      <span id="quota-total"></span>
+    </div>
+    <span class="quota-note">プリセット視聴は0回消費</span>
+  </div>
+</header>
+
+<main>
+  <div id="test-banner" class="test-banner"></div>
+
+  <!-- チャンネル選択 -->
+  <div class="channel-tabs">
+    <button type="button" class="ch-tab active" data-ch="casual">
+      <div class="ch-title">🔰 観戦ゆるトーク枠</div>
+      <div class="ch-desc">元選手ケンジ × 初心者ミホ</div>
+    </button>
+    <button type="button" class="ch-tab" data-ch="heated">
+      <div class="ch-title">🔥 FW vs BK 激論枠</div>
+      <div class="ch-desc">FW派ゴリ × BK派シュン</div>
+    </button>
+  </div>
+
+  <!-- 番組（お題）一覧画面 -->
+  <section id="lobby-section">
+    <div class="card">
+      <div class="section-head">
+        <h2 id="lobby-heading">📻 今すぐ聴ける定番番組</h2>
+        <span class="badge-free">枠消費ゼロ・即再生</span>
+      </div>
+      <div class="topic-list" id="topic-list"></div>
+
+      <div style="margin-top:12px;">
+        <div class="section-head" style="margin-bottom:4px;">
+          <h2>✨ 好きなテーマで番組を始める</h2>
+          <span class="badge-api">生放送枠 1回消費</span>
+        </div>
+        <div class="custom-topic-row" style="margin-top:4px; padding-top:6px; border-top:none;">
+          <input type="text" id="custom-topic-input" maxlength="100" placeholder="例：高校ラグビーの注目ポイント／オフサイドを簡単に">
+          <button type="button" class="btn-start-custom" id="btn-start-custom">放送開始</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ラジオブース（再生＆割り込み画面） -->
+  <section id="studio-section">
+    <div class="card">
+      <div class="studio-top">
+        <div class="studio-topic-label" id="studio-topic-title">お題タイトル</div>
+        <button type="button" class="btn-back" id="btn-back-lobby">◀ 番組一覧へ</button>
+      </div>
+
+      <div class="stage">
+        <div class="host-card" id="host-a">
+          <div class="host-avatar" id="host-a-icon">🏉</div>
+          <div class="host-name" id="host-a-name">ケンジ</div>
+          <div class="host-role" id="host-a-role">元ラガーマン解説</div>
+          <div class="wave"><span></span><span></span><span></span><span></span></div>
+        </div>
+        <div class="host-card" id="host-b">
+          <div class="host-avatar" id="host-b-icon">📣</div>
+          <div class="host-name" id="host-b-name">ミホ</div>
+          <div class="host-role" id="host-b-role">観戦ビギナー</div>
+          <div class="wave"><span></span><span></span><span></span><span></span></div>
+        </div>
+      </div>
+
+      <div class="player-controls">
+        <button type="button" class="ctrl-btn primary" id="btn-play-pause">⏸ 一時停止</button>
+        <button type="button" class="ctrl-btn" id="btn-next-line">⏭ 次のセリフ</button>
+        <button type="button" class="ctrl-btn" id="btn-replay">↺ 最初から</button>
+        <label class="speed-label">
+          速度:
+          <select id="voice-speed">
+            <option value="1.0" selected>標準</option>
+            <option value="1.2">速め</option>
+            <option value="1.4">倍速</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="chat-log" id="chat-log"></div>
+    </div>
+  </section>
+</main>
+
+<!-- 下部固定 割り込みドック -->
+<div class="interrupt-dock" id="interrupt-dock">
+  <div class="interrupt-inner">
+    <button type="button" class="btn-hand-raise" id="btn-open-cutin">
+      <span>✋ オレにも話せろ！（会話に割り込む）</span>
+    </button>
+
+    <div class="interrupt-form" id="interrupt-form">
+      <div class="chip-row" id="chip-row"></div>
+      <div class="input-row">
+        <input type="text" id="cutin-input" maxlength="100" placeholder="ツッコミや質問を入力（最大100文字）">
+        <button type="button" class="btn-send-cutin" id="btn-send-cutin">割り込む</button>
+      </div>
+      <div class="form-meta">
+        <span id="cutin-char-count">0 / 100文字（生放送枠を1回消費）</span>
+        <button type="button" class="btn-cancel-cutin" id="btn-cancel-cutin">閉じて聴き続ける</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // =========================================================
+  // ★ デプロイしたGASのウェブアプリURLをここに貼り付けます
+  // =========================================================
+  const GAS_API_URL = "";
+
+  // チャンネル設定
+  const CHANNELS = {
+    casual: {
+      title: "観戦ゆるトーク枠",
+      hostA: { name: "ケンジ", role: "元ラガーマン解説", icon: "🏉", pitch: 0.9, rateOffset: 0.0 },
+      hostB: { name: "ミホ", role: "観戦ビギナー保護者", icon: "📣", pitch: 1.25, rateOffset: 0.05 },
+      chips: ["それどういう意味？", "もっと例え話で！", "観戦時の見どころは？", "高校ラグビーだとどう？"]
+    },
+    heated: {
+      title: "FW vs BK 激論枠",
+      hostA: { name: "ゴリ", role: "FW派・熱血コーチ", icon: "🦬", pitch: 0.78, rateOffset: -0.04 },
+      hostB: { name: "シュン", role: "BK派・理論コーチ", icon: "⚡", pitch: 1.12, rateOffset: 0.08 },
+      chips: ["いや反論あり！", "結局どっちが大事？", "小さいチームはどう戦う？", "花園ならどうなる？"]
+    }
+  };
+
+  // API消費0円のプリセット番組（各チャンネル4本・計8本）
+  const PRESET_TOPICS = {
+    casual: [
+      {
+        id: "c1",
+        title: "ノックオンとスローフォワードって何が違うの？",
+        sub: "観戦で一番よく聞く2つの反則をスッキリ整理",
+        lines: [
+          { speaker: "B", text: "ケンジさん、試合を見てると前にボールがいったとき、ノックオンって言われたりスローフォワードって言われたりしません？" },
+          { speaker: "A", text: "おっ、いいところに気づいたね！どっちも前にボールを進めちゃう反則なんだけど、わざと投げたか、うっかり落としたかの違いなんだ。" },
+          { speaker: "B", text: "あー、なるほど！パスしたつもりが前に飛んじゃったのがスローフォワードですか？" },
+          { speaker: "A", text: "大正解！スローは投げる、フォワードは前って意味だね。で、キャッチし損ねて前にポロンと落としちゃうのがノックオンだよ。" },
+          { speaker: "B", text: "じゃあ、足で前に蹴るのはいいんですよね？ラグビーってそこがちょっと不思議で面白いです！" },
+          { speaker: "A", text: "そうそう、足なら前に蹴ってOK！ちなみに最近はノックオンのことをノックフォワードって呼ぶルール改正もあったから、両方覚えておくと通っぽいよ。" }
+        ]
+      },
+      {
+        id: "c2",
+        title: "密集（ラック）になるとすぐ笛が鳴るのはなぜ？",
+        sub: "人が重なり合って見えない場所で何が起きている？",
+        lines: [
+          { speaker: "B", text: "タックルのあとに人がワーッと集まるじゃないですか。あそこで急にピーッて笛が鳴ると、正直なにが起きたか分からなくて。" },
+          { speaker: "A", text: "ラグビー観戦の最大の壁だよね。密集のことをラックって言うんだけど、あそこでは『倒れた選手はボールをすぐ離さなきゃダメ』っていう鉄則があるんだ。" },
+          { speaker: "B", text: "えっ、せっかく持ってたのに離さなきゃいけないんですか？奪われちゃいそう！" },
+          { speaker: "A", text: "だから味方が素早く駆けつけて守るんだよ。もし倒れたままボールを抱え込んじゃうと、ノットリリースザボールっていう反則で笛が鳴るんだよね。" },
+          { speaker: "B", text: "なるほど！守る側がボールを奪い取ろうとするジャッカルっていうのも、その一瞬の攻防なんですね！" },
+          { speaker: "A", text: "その通り！次からは密集の瞬間、倒れた選手がすぐ手を離してるか見てみると、笛の意味が一気に見えてくるよ。" }
+        ]
+      },
+      {
+        id: "c3",
+        title: "秋冬のラグビー観戦、防寒と持ち物の鉄則は？",
+        sub: "保護者や初めて現地へ行く人のためのリアル装備",
+        lines: [
+          { speaker: "B", text: "これから冬の試合シーズンですよね。ラグビー場の観戦って、想像以上に寒いって聞いたんですけど本当ですか？" },
+          { speaker: "A", text: "本当本当！特に河川敷や山の近くのグラウンドは風を遮るものがないから、街中より5度くらい体感温度が低いと思ったほうがいいよ。" },
+          { speaker: "B", text: "うわあ、ダウンジャケットだけじゃ足りないパターンですね。おすすめアイテムってありますか？" },
+          { speaker: "A", text: "絶対に持っていきたいのは、お尻の下に敷く断熱クッションと、足用のカイロ！ベンチの冷たさって下からジワジワくるんだよね。" },
+          { speaker: "B", text: "たしかに、ずっと座ってると足の先から冷えますもんね。あと温かい飲み物を入れた水筒もあると良さそう。" },
+          { speaker: "A", text: "バッチリ！あと試合中は傘がさせない会場も多いから、急な雨や風よけにレインコートを1枚バッグに忍ばせておくと完璧だよ。" }
+        ]
+      },
+      {
+        id: "c4",
+        title: "背番号1番〜15番、ざっくりどう見分ける？",
+        sub: "ポジションの役割を3グループで覚えるコツ",
+        lines: [
+          { speaker: "B", text: "ラグビーって15人もいて、背番号でポジションが決まってるんですよね？全部覚えるのは大変そうで。" },
+          { speaker: "A", text: "最初は15個覚えなくて大丈夫！大きく3つのチームに分けて見るとすごく分かりやすいよ。" },
+          { speaker: "B", text: "3つですか？それなら覚えられそうです！" },
+          { speaker: "A", text: "まず1番から8番がフォワード、力自慢でスクラムやボール争奪戦の職人集団。次に9番と10番が司令塔コンビで、ボールをどこに運ぶか決める頭脳派だよ。" },
+          { speaker: "B", text: "じゃあ残りの11番から15番が、足を活かしてトライを取りに行くスピードスターたちですね！" },
+          { speaker: "A", text: "完璧！特に11番と14番のウイングは端っこで一気に駆け上がる花形だから、ボールが外に回ったときは注目してみてね。" }
+        ]
+      }
+    ],
+    heated: [
+      {
+        id: "h1",
+        title: "小さいチームが大きい相手に勝つにはどうする？",
+        sub: "フィジカル差をひっくり返す戦術を巡って激突！",
+        lines: [
+          { speaker: "A", text: "小さいチームが大型チームに勝つには、結局のところ低いタックルと接点のしつこさだぞ！逃げたら終わりだ！" },
+          { speaker: "B", text: "いやいやゴリさん、真正面からぶつかり合ったら体重差で削られるだけだろ。ボールを動かして相手の大男を走らせてバテさせるのが定石だよ。" },
+          { speaker: "A", text: "おいシュン、それだってブレイクダウンで球を出せて初めてできる話だろ！接点で受けてたら展開する前にターンオーバーされるんだぞ！" },
+          { speaker: "B", text: "もちろん2人目の寄りの速さは大前提さ。だからこそ相手が揃う前にアンストラクチャーから素早く外へ振る、キックで裏のスペースを突く工夫がいるんだよ。" },
+          { speaker: "A", text: "ちっ、理屈は分かるが、最後に相手を折るのは『何度当たっても前に出られない』っていう泥臭いディフェンスの我慢比べなんだよな。" },
+          { speaker: "B", text: "そこは認めるよ。泥臭い接点の粘りと、スペースを突く賢さ、両方噛み合ったときが一番ジャイアントキリングが起きやすいね。" }
+        ]
+      },
+      {
+        id: "h2",
+        title: "スクラムとモール、試合を決めるのはどっちだ！",
+        sub: "フォワードのプライドとバックスの本音が交錯",
+        lines: [
+          { speaker: "A", text: "試合の主導権を完全に握るのはスクラムに決まってるだろ！1本押し込んでペナルティを取れば、相手の心まで折れるんだぞ！" },
+          { speaker: "B", text: "スクラムも大事だけど、ゴール前5メートルのラインアウトモールの方が直接トライになる確率は圧倒的に高いよ。守る側からしたら一番嫌な武器だね。" },
+          { speaker: "A", text: "ほう、バックスのくせにモールの怖さが分かってるじゃないか！でもな、スクラムが安定してるからこそ敵陣へ攻め込めるんだよ。" },
+          { speaker: "B", text: "まあ、僕らバックスからすると、スクラムで相手フォワードが釘付けになってくれれば、サインプレーで一発トライが狙いやすいっていうメリットもあるけどね。" },
+          { speaker: "A", text: "おいおい、結局うまいとこ取りしたいだけじゃないか！でもスクラムで優勢を取ってモールで仕留める流れは、ラグビーの醍醐味だな。" },
+          { speaker: "B", text: "その上でディフェンスが内側に寄った瞬間、外に飛ばしてトライを取るのが一番美しいんだけどね！" }
+        ]
+      },
+      {
+        id: "h3",
+        title: "現代ラグビーのキック多用、アリかナシか？",
+        sub: "テリトリー重視のキック合戦 vs 継続アタック",
+        lines: [
+          { speaker: "B", text: "現代ラグビーはキックを制する者が試合を制すよ。自陣で無理に回してミスするくらいなら、ハイパントや50対22を狙って陣地を取るべきだ。" },
+          { speaker: "A", text: "出たよ、またスマートぶって！せっかくフォワードが命懸けで奪ったボールを、すぐ相手に蹴り返すのを見るとこっちは泣きたくなるんだぞ！" },
+          { speaker: "B", text: "蹴り返してるんじゃない、チェイスして再獲得するか、相手陣地でディフェンスする権利を買ってるんだよ。統計的にも自陣からのアタックはリスクが高すぎる。" },
+          { speaker: "A", text: "データデータって言うけどな、フェーズを重ねて相手の体力を削るボディブローだって後半に効いてくるだろ！全部蹴ってたら面白みがないぞ。" },
+          { speaker: "B", text: "だからこそ、蹴ると見せかけてカウンターを仕掛ける駆け引きが光るんだよ。キックの脅威があるから相手のバックスリーが下がって、前のスペースが空くわけさ。" },
+          { speaker: "A", text: "なるほどな、キックのあとのチェイスでフォワードがどデカいタックルを決められるなら、俺も少しは見直してやってもいいぞ。" }
+        ]
+      },
+      {
+        id: "h4",
+        title: "高校ラグビー（花園）で番狂わせが起きる条件とは？",
+        sub: "一発勝負のトーナメントで何が勝敗を分けるのか",
+        lines: [
+          { speaker: "A", text: "花園の一発勝負は、シード校だろうが関係ないぞ！最初の10分で相手の圧力を跳ね返して、接点で互角以上にやれたら一気に空気が変わるんだ！" },
+          { speaker: "B", text: "たしかに立ち上がりの入り方は超重要だね。加えて花園は試合時間が30分ハーフと短いから、1トライとペナルティゴールの重みが大学や社会人と全然違う。" },
+          { speaker: "A", text: "そうなんだよ！30分なんてあっという間だから、強豪校が焦り出した瞬間にノーペナルティで我慢し続けられるチームが勝つんだよな。" },
+          { speaker: "B", text: "あとはキッカーの精度と、グラウンドの風を読む力だね。年末の花園は独特の風が吹くし、緊張で普段通りのパスが乱れやすいから、シンプルな強みがあるチームが強い。" },
+          { speaker: "A", text: "結局、3年間死ぬほど反復してきた自分たちの形を、大舞台で迷わず出し切れるかどうかだな。ああ、話してたら花園が見たくなってきたぞ！" },
+          { speaker: "B", text: "同感だね。戦術の引き出しと、高校生の気持ちの強さがぶつかり合うのが花園の最高の魅力だよ。" }
+        ]
+      }
+    ]
+  };
+
+  // アプリ状態
+  let currentChannel = "casual";
+  let currentTopicTitle = "";
+  let queue = [];         // 再生待ちのセリフ配列
+  let displayedLog = [];  // すでに表示された会話履歴
+  let currentIndex = 0;   // 現在の再生位置
+  let isPlaying = false;
+  let isPaused = false;
+  let voiceEnabled = true;
+  let silentTimer = null;
+  let isGenerating = false;
+
+  // 残数状態
+  let remainingQuota = 100;
+  let dailyLimit = 100;
+  let isTestMode = !GAS_API_URL;
+
+  // 初期化
+  window.addEventListener("DOMContentLoaded", () => {
+    setupEvents();
+    renderChannelLobby();
+    initQuota();
+
+    if (isTestMode) {
+      const tb = document.getElementById("test-banner");
+      tb.style.display = "block";
+      tb.textContent = "💡 テストモード動作中：プリセット8番組は今すぐ聴けます。GAS_API_URLを設定すると、Geminiによる本物の「割り込み生放送」が動きます。";
+    }
+
+    // 音声リストの事前読み込み（Safari/Chrome対策）
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+  });
+
+  // 残り生放送枠の取得
+  async function initQuota() {
+    if (isTestMode) {
+      updateQuotaUI(100, 100);
+      return;
+    }
+    try {
+      const res = await fetch(GAS_API_URL + "?t=" + Date.now());
+      const data = await res.json();
+      if (data && data.ok) {
+        updateQuotaUI(data.remaining, data.limit);
+      } else {
+        updateQuotaUI(100, 100);
+      }
+    } catch (e) {
+      console.warn("Quota fetch error:", e);
+      document.getElementById("quota-remaining").textContent = "取得エラー";
+    }
+  }
+
+  function updateQuotaUI(rem, lim) {
+    remainingQuota = Number(rem);
+    dailyLimit = Number(lim || 100);
+
+    const numEl = document.getElementById("quota-remaining");
+    const totalEl = document.getElementById("quota-total");
+    numEl.textContent = `残り ${remainingQuota} 回`;
+    totalEl.textContent = `/ ${dailyLimit}回`;
+
+    numEl.classList.remove("low", "empty");
+    if (remainingQuota <= 0) {
+      numEl.classList.add("empty");
+    } else if (remainingQuota <= 20) {
+      numEl.classList.add("low");
+    }
+
+    // 上限到達時はボタン制御
+    const isEmpty = remainingQuota <= 0;
+    const btnCustom = document.getElementById("btn-start-custom");
+    btnCustom.disabled = isEmpty;
+    btnCustom.textContent = isEmpty ? "本日終了" : "放送開始";
+
+    const btnOpen = document.getElementById("btn-open-cutin");
+    btnOpen.disabled = isEmpty;
+    btnOpen.innerHTML = isEmpty
+      ? "<span>🌙 本日の生放送枠は終了しました（明日0時に復活）</span>"
+      : "<span>✋ オレにも話せろ！（会話に割り込む）</span>";
+  }
+
+  function setupEvents() {
+    // チャンネル切替
+    document.querySelectorAll(".ch-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        if (currentChannel === tab.dataset.ch) return;
+        stopPlayback();
+        currentChannel = tab.dataset.ch;
+        document.querySelectorAll(".ch-tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        showLobby();
+        renderChannelLobby();
+      });
+    });
+
+    // 音声ON/OFF切替
+    document.getElementById("btn-voice-toggle").addEventListener("click", () => {
+      voiceEnabled = !voiceEnabled;
+      const btn = document.getElementById("btn-voice-toggle");
+      btn.textContent = voiceEnabled ? "🔊 音声ON" : "🔇 字幕のみ";
+      btn.classList.toggle("muted", !voiceEnabled);
+
+      if (!voiceEnabled && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        if (isPlaying && !isPaused) {
+          scheduleNextSilent();
+        }
+      }
+    });
+
+    // 番組一覧へ戻る
+    document.getElementById("btn-back-lobby").addEventListener("click", () => {
+      stopPlayback();
+      showLobby();
+    });
+
+    // 一時停止 / 再開
+    document.getElementById("btn-play-pause").addEventListener("click", () => {
+      if (!isPlaying && currentIndex >= queue.length) {
+        replayFromStart();
+        return;
+      }
+      if (isPaused) {
+        resumePlayback();
+      } else {
+        pausePlayback();
+      }
+    });
+
+    // 次のセリフへスキップ
+    document.getElementById("btn-next-line").addEventListener("click", () => {
+      if (currentIndex < queue.length) {
+        cancelSpeechAndTimer();
+        isPaused = false;
+        isPlaying = true;
+        playLineAt(currentIndex);
+      }
+    });
+
+    // 最初から聴き直す
+    document.getElementById("btn-replay").addEventListener("click", replayFromStart);
+
+    // 自由お題で放送開始
+    document.getElementById("btn-start-custom").addEventListener("click", handleCustomTopic);
+
+    // 割り込みパネルを開く
+    document.getElementById("btn-open-cutin").addEventListener("click", () => {
+      pausePlayback();
+      document.getElementById("btn-open-cutin").style.display = "none";
+      document.getElementById("interrupt-form").style.display = "block";
+      document.getElementById("cutin-input").focus();
+    });
+
+    // 割り込みパネルを閉じる
+    document.getElementById("btn-cancel-cutin").addEventListener("click", () => {
+      closeCutinForm();
+      if (currentIndex < queue.length) {
+        resumePlayback();
+      }
+    });
+
+    // 文字数カウント
+    document.getElementById("cutin-input").addEventListener("input", (e) => {
+      document.getElementById("cutin-char-count").textContent =
+        `${e.target.value.length} / 100文字（生放送枠を1回消費）`;
+    });
+
+    // 割り込み送信
+    document.getElementById("btn-send-cutin").addEventListener("click", handleInterruptSubmit);
+  }
+
+  function renderChannelLobby() {
+    const ch = CHANNELS[currentChannel];
+    const listEl = document.getElementById("topic-list");
+    listEl.innerHTML = "";
+
+    document.getElementById("lobby-heading").textContent = `📻 ${ch.title} の定番番組`;
+
+    PRESET_TOPICS[currentChannel].forEach(topic => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "topic-item";
+      btn.innerHTML = `
+        <div>
+          <div class="topic-title">${escapeHtml(topic.title)}</div>
+          <div class="topic-sub">${escapeHtml(topic.sub)}</div>
+        </div>
+        <span class="play-pill">▶ 聴く</span>
+      `;
+      btn.addEventListener("click", () => {
+        sendGaEvent("play_preset", { channel: currentChannel, topic_id: topic.id });
+        startBroadcast(topic.title, [...topic.lines]);
+      });
+      listEl.appendChild(btn);
+    });
+  }
+
+  function showLobby() {
+    document.getElementById("lobby-section").style.display = "block";
+    document.getElementById("studio-section").style.display = "none";
+    document.getElementById("interrupt-dock").style.display = "none";
+    closeCutinForm();
+    setOnAir(false);
+  }
+
+  function showStudio(topicTitle) {
+    const ch = CHANNELS[currentChannel];
+    document.getElementById("studio-topic-title").textContent = "🎙️ " + topicTitle;
+    document.getElementById("host-a-icon").textContent = ch.hostA.icon;
+    document.getElementById("host-a-name").textContent = ch.hostA.name;
+    document.getElementById("host-a-role").textContent = ch.hostA.role;
+    document.getElementById("host-b-icon").textContent = ch.hostB.icon;
+    document.getElementById("host-b-name").textContent = ch.hostB.name;
+    document.getElementById("host-b-role").textContent = ch.hostB.role;
+
+    // 割り込みチップ生成
+    const chipRow = document.getElementById("chip-row");
+    chipRow.innerHTML = "";
+    ch.chips.forEach(text => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip-btn";
+      b.textContent = text;
+      b.addEventListener("click", () => {
+        document.getElementById("cutin-input").value = text;
+        document.getElementById("cutin-char-count").textContent = `${text.length} / 100文字（生放送枠を1回消費）`;
+      });
+      chipRow.appendChild(b);
+    });
+
+    document.getElementById("lobby-section").style.display = "none";
+    document.getElementById("studio-section").style.display = "block";
+    document.getElementById("interrupt-dock").style.display = "block";
+  }
+
+  function closeCutinForm() {
+    document.getElementById("interrupt-form").style.display = "none";
+    document.getElementById("btn-open-cutin").style.display = "flex";
+  }
+
+  // 番組開始
+  function startBroadcast(title, lines) {
+    stopPlayback();
+    currentTopicTitle = title;
+    queue = lines;
+    displayedLog = [];
+    currentIndex = 0;
+    document.getElementById("chat-log").innerHTML = "";
+
+    showStudio(title);
+    isPlaying = true;
+    isPaused = false;
+    updatePlayPauseBtn();
+    setOnAir(true);
+    playLineAt(0);
+  }
+
+  function replayFromStart() {
+    if (!queue.length) return;
+    startBroadcast(currentTopicTitle, [...queue]);
+  }
+
+  function playLineAt(idx) {
+    if (idx >= queue.length) {
+      finishPlayback();
+      return;
+    }
+
+    currentIndex = idx;
+    const item = queue[idx];
+
+    // すでに表示済みでなければチャット欄へ追加
+    if (displayedLog.length <= idx) {
+      displayedLog.push(item);
+      appendBubble(item.speaker, item.text);
+    }
+
+    highlightSpeaker(item.speaker);
+
+    // ユーザー発言行ならすぐ次へ
+    if (item.speaker === "USER") {
+      currentIndex = idx + 1;
+      silentTimer = setTimeout(() => {
+        if (isPlaying && !isPaused) playLineAt(currentIndex);
+      }, 600);
+      return;
+    }
+
+    currentIndex = idx + 1;
+
+    if (voiceEnabled && "speechSynthesis" in window) {
+      speakLine(item.speaker, item.text, () => {
+        if (isPlaying && !isPaused) {
+          silentTimer = setTimeout(() => {
+            if (isPlaying && !isPaused) playLineAt(currentIndex);
+          }, 350);
+        }
+      });
+    } else {
+      scheduleNextSilent(item.text);
+    }
+  }
+
+  function scheduleNextSilent(text = "") {
+    clearTimeout(silentTimer);
+    const speed = parseFloat(document.getElementById("voice-speed").value || "1.0");
+    const waitMs = Math.max(1600, Math.min(4500, (text.length * 65) / speed));
+    silentTimer = setTimeout(() => {
+      if (isPlaying && !isPaused) playLineAt(currentIndex);
+    }, waitMs);
+  }
+
+  function speakLine(speaker, text, onDone) {
+    window.speechSynthesis.cancel();
+    const uttr = new SpeechSynthesisUtterance(text);
+    uttr.lang = "ja-JP";
+
+    const ch = CHANNELS[currentChannel];
+    const host = speaker === "A" ? ch.hostA : ch.hostB;
+    const baseSpeed = parseFloat(document.getElementById("voice-speed").value || "1.0");
+
+    uttr.pitch = host.pitch;
+    uttr.rate = Math.min(1.8, Math.max(0.7, baseSpeed + host.rateOffset));
+
+    const voices = window.speechSynthesis.getVoices().filter(v => v.lang && v.lang.startsWith("ja"));
+    if (voices.length >= 2) {
+      uttr.voice = speaker === "A" ? voices[0] : voices[1];
+    } else if (voices.length === 1) {
+      uttr.voice = voices[0];
+    }
+
+    let finished = false;
+    const safeDone = () => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(fallbackTimer);
+      onDone();
+    };
+
+    uttr.onend = safeDone;
+    uttr.onerror = safeDone;
+
+    // iOS Safari等でonendが発火しない場合の保険タイマー
+    const fallbackMs = Math.max(4000, text.length * 260 + 2500);
+    const fallbackTimer = setTimeout(safeDone, fallbackMs);
+
+    window.speechSynthesis.speak(uttr);
+  }
+
+  function pausePlayback() {
+    isPaused = true;
+    cancelSpeechAndTimer();
+    highlightSpeaker(null);
+    setOnAir(false);
+    updatePlayPauseBtn();
+  }
+
+  function resumePlayback() {
+    if (currentIndex >= queue.length) {
+      replayFromStart();
+      return;
+    }
+    isPaused = false;
+    isPlaying = true;
+    setOnAir(true);
+    updatePlayPauseBtn();
+    playLineAt(currentIndex);
+  }
+
+  function finishPlayback() {
+    isPlaying = false;
+    isPaused = false;
+    highlightSpeaker(null);
+    setOnAir(false);
+    updatePlayPauseBtn();
+    appendSystemNotice("📻 トークひと区切り！下の「✋ オレにも話せろ！」から続きを話せます");
+  }
+
+  function stopPlayback() {
+    isPlaying = false;
+    isPaused = false;
+    cancelSpeechAndTimer();
+    highlightSpeaker(null);
+    setOnAir(false);
+  }
+
+  function cancelSpeechAndTimer() {
+    clearTimeout(silentTimer);
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  function updatePlayPauseBtn() {
+    const btn = document.getElementById("btn-play-pause");
+    if (!isPlaying && currentIndex >= queue.length) {
+      btn.textContent = "▶ もう一度聴く";
+    } else if (isPaused) {
+      btn.textContent = "▶ 再開";
+    } else {
+      btn.textContent = "⏸ 一時停止";
+    }
+  }
+
+  function highlightSpeaker(speaker) {
+    const a = document.getElementById("host-a");
+    const b = document.getElementById("host-b");
+    a.classList.remove("speaking-a");
+    b.classList.remove("speaking-b");
+    if (speaker === "A") a.classList.add("speaking-a");
+    if (speaker === "B") b.classList.add("speaking-b");
+  }
+
+  function setOnAir(live) {
+    const badge = document.getElementById("onair-badge");
+    badge.textContent = live ? "● ON AIR" : "STANDBY";
+    badge.classList.toggle("live", live);
+  }
+
+  function appendBubble(speaker, text) {
+    const log = document.getElementById("chat-log");
+    const ch = CHANNELS[currentChannel];
+    const div = document.createElement("div");
+
+    if (speaker === "USER") {
+      div.className = "bubble user";
+      div.innerHTML = `<div class="bubble-name">✋ あなたの割り込み</div><div>${escapeHtml(text)}</div>`;
+    } else {
+      const host = speaker === "A" ? ch.hostA : ch.hostB;
+      div.className = `bubble ${speaker.toLowerCase()}`;
+      div.innerHTML = `<div class="bubble-name">${host.icon} ${escapeHtml(host.name)}</div><div>${escapeHtml(text)}</div>`;
+    }
+
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function appendSystemNotice(text) {
+    const log = document.getElementById("chat-log");
+    const div = document.createElement("div");
+    div.className = "bubble system";
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+    return div;
+  }
+
+  // 自由お題で新番組スタート
+  async function handleCustomTopic() {
+    if (isGenerating) return;
+    const input = document.getElementById("custom-topic-input");
+    const topic = input.value.trim();
+    if (!topic) {
+      alert("話してほしいラグビーのテーマを入力してください！");
+      return;
+    }
+    if (remainingQuota <= 0) {
+      alert("本日の生放送枠は終了しました。プリセット番組をお楽しみください！");
+      return;
+    }
+
+    isGenerating = true;
+    const btn = document.getElementById("btn-start-custom");
+    btn.disabled = true;
+    btn.textContent = "準備中...";
+
+    sendGaEvent("generate_topic", { channel: currentChannel });
+
+    try {
+      const lines = await requestAiLines({
+        mode: "topic",
+        channel: currentChannel,
+        userText: topic
+      });
+      if (lines && lines.length > 0) {
+        input.value = "";
+        startBroadcast(topic, lines);
+      }
+    } finally {
+      isGenerating = false;
+      btn.disabled = remainingQuota <= 0;
+      btn.textContent = remainingQuota <= 0 ? "本日終了" : "放送開始";
+    }
+  }
+
+  // 会話への割り込み送信
+  async function handleInterruptSubmit() {
+    if (isGenerating) return;
+    const input = document.getElementById("cutin-input");
+    const text = input.value.trim();
+    if (!text) {
+      alert("割り込みたい一言を入力するか、上のボタンを選んでください！");
+      return;
+    }
+    if (remainingQuota <= 0) {
+      alert("本日の生放送枠は終了しました。明日0時に復活します！");
+      return;
+    }
+
+    isGenerating = true;
+    const btn = document.getElementById("btn-send-cutin");
+    btn.disabled = true;
+    btn.textContent = "応答中...";
+
+    // ユーザーの割り込みを即座に画面反映し、未再生だった古い台本は打ち切る
+    cancelSpeechAndTimer();
+    queue = [...displayedLog];
+    const userItem = { speaker: "USER", text: text };
+    queue.push(userItem);
+    displayedLog.push(userItem);
+    currentIndex = queue.length;
+    appendBubble("USER", text);
+
+    input.value = "";
+    document.getElementById("cutin-char-count").textContent = "0 / 100文字（生放送枠を1回消費）";
+    closeCutinForm();
+
+    const loadingEl = appendSystemNotice("🎙️ パーソナリティ2人が反応を考えています...");
+    sendGaEvent("interrupt_talk", { channel: currentChannel });
+
+    try {
+      const newLines = await requestAiLines({
+        mode: "interrupt",
+        channel: currentChannel,
+        topicTitle: currentTopicTitle,
+        userText: text,
+        history: displayedLog.slice(-8)
+      });
+
+      loadingEl.remove();
+
+      if (newLines && newLines.length > 0) {
+        const startIdx = queue.length;
+        queue = queue.concat(newLines);
+        isPlaying = true;
+        isPaused = false;
+        setOnAir(true);
+        updatePlayPauseBtn();
+        playLineAt(startIdx);
+      }
+    } catch (e) {
+      loadingEl.remove();
+    } finally {
+      isGenerating = false;
+      btn.disabled = false;
+      btn.textContent = "割り込む";
+    }
+  }
+
+  // GASへリクエスト送信（未設定時はテスト用ダミー応答）
+  async function requestAiLines(payload) {
+    if (isTestMode) {
+      await new Promise(r => setTimeout(r, 900));
+      updateQuotaUI(Math.max(0, remainingQuota - 1), dailyLimit);
+      return [
+        { speaker: "A", text: `おっ、リスナーから「${payload.userText}」っていいツッコミが来たぞ！これはテストモードの仮応答だよ。` },
+        { speaker: "B", text: "本当ですね！GASのURLをコードに設定すると、Geminiが今の言葉に合わせて本格的な掛け合いを作ってくれますよ！" },
+        { speaker: "A", text: "そうそう、しかも1日100回のストッパー付きだから安心だね。さっそくGASを繋いで生放送を始めてみよう！" }
+      ];
+    }
+
+    try {
+      const res = await fetch(GAS_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (typeof data.remaining === "number") {
+        updateQuotaUI(data.remaining, data.limit || dailyLimit);
+      }
+
+      if (!data.ok) {
+        alert(data.error || "応答の取得に失敗しました。");
+        return null;
+      }
+      return data.lines;
+    } catch (err) {
+      alert("通信エラーが発生しました: " + err.message);
+      return null;
+    }
+  }
+
+  function sendGaEvent(name, params) {
+    if (typeof gtag === "function") {
+      gtag("event", name, params || {});
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
+  }
+</script>
+</body>
+</html>

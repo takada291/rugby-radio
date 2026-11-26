@@ -168,7 +168,7 @@
       max-width: 600px;
       margin: 0 auto;
       padding: 12px;
-      padding-bottom: 135px;
+      padding-bottom: 140px;
     }
 
     /* 4項目ジャンルタブ（2×2グリッド） */
@@ -455,7 +455,7 @@
       white-space: nowrap;
     }
 
-    /* ラジオブース（再生＆割り込み画面：リプレイ機能完全オミット） */
+    /* ラジオブース（再生＆割り込み専用画面） */
     #studio-section {
       display: none;
     }
@@ -587,7 +587,7 @@
       to { height: 12px; }
     }
 
-    /* 会話ログ（字幕エリア：リプレイ削除で広々確保） */
+    /* 会話ログ（字幕エリア） */
     .chat-log {
       display: flex;
       flex-direction: column;
@@ -666,6 +666,15 @@
       box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
     }
 
+    .app-disclaimer {
+      text-align: center;
+      font-size: 0.68rem;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin-top: 8px;
+      padding: 0 8px;
+    }
+
     /* 下部固定 割り込みパネル */
     .interrupt-dock {
       position: fixed;
@@ -683,6 +692,15 @@
       max-width: 600px;
       margin: 0 auto;
       padding: 10px 12px;
+    }
+
+    .dock-hint {
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 6px;
+      display: none;
     }
 
     .dock-btn-grid {
@@ -705,6 +723,7 @@
       justify-content: center;
       align-items: center;
       gap: 5px;
+      transition: all 0.2s ease;
     }
 
     .btn-hand-raise {
@@ -721,11 +740,13 @@
       justify-content: center;
       align-items: center;
       gap: 5px;
+      transition: all 0.2s ease;
     }
 
     .btn-voice-cutin:disabled,
     .btn-hand-raise:disabled {
-      background: #94a3b8;
+      background: #cbd5e1;
+      color: #64748b;
       box-shadow: none;
       cursor: not-allowed;
     }
@@ -844,7 +865,7 @@
   <div class="header-top">
     <div class="brand">
       <h1>🎙️ ラグビーAIラジオ</h1>
-      <span class="ver-tag">v3.0</span>
+      <span class="ver-tag">v3.1</span>
     </div>
     <button type="button" class="btn-header" id="btn-voice-toggle">🔊 音声ON</button>
   </div>
@@ -875,7 +896,7 @@
     </button>
     <button type="button" class="genre-tab" data-tab="custom">
       <span class="genre-title">✨ 好きなテーマ</span>
-      <span class="genre-sub">大阪桐蔭なぜ強い？等</span>
+      <span class="genre-sub">高校ラグビーの見どころ等</span>
     </button>
   </div>
 
@@ -906,7 +927,7 @@
       </p>
       <div class="custom-topic-row">
         <button type="button" class="btn-mic-small" id="btn-topic-mic" title="声でテーマを入力">🎤</button>
-        <input type="text" id="custom-topic-input" maxlength="100" placeholder="例：大阪桐蔭はなぜ強いのか">
+        <input type="text" id="custom-topic-input" maxlength="100" placeholder="例：高校ラグビーの見どころ">
         <button type="button" class="btn-start-custom" id="btn-start-custom">放送開始</button>
       </div>
 
@@ -946,11 +967,16 @@
       <div class="chat-log" id="chat-log"></div>
     </div>
   </section>
+
+  <p class="app-disclaimer">
+    ※AIによるトーク生成のため、ルールや事実と異なる内容が含まれる場合があります。最新情報は元記事をご確認ください。
+  </p>
 </main>
 
 <!-- 下部固定 割り込みドック -->
 <div class="interrupt-dock" id="interrupt-dock">
   <div class="interrupt-inner">
+    <div class="dock-hint" id="dock-hint"></div>
     <div class="dock-btn-grid" id="dock-btn-grid">
       <button type="button" class="btn-voice-cutin" id="btn-voice-cutin">
         <span>🎤 声で割り込む</span>
@@ -988,7 +1014,7 @@
   // =========================================================
   const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxuRzJQyOnN6WDvaMCjZdipb38mo9lZixi-BkEvvtNr7IqegvmEgpXkYvlCfi3KFbNT/exec";
 
-  const PREF_KEY = "rugby_radio_prefs_v30";
+  const PREF_KEY = "rugby_radio_prefs_v31";
   const SILENT_WAV_DATA_URI = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
 
   const TAB_META = {
@@ -1000,9 +1026,9 @@
 
   // 好きなテーマ枠のワンタップおすすめお題
   const SUGGESTED_TOPICS = [
-    "大阪桐蔭はなぜ強いのか",
-    "高校ラグビー（花園）の見どころと注目ポイント",
-    "ノックオンとスローフォワードの違いを初心者向けに教えて",
+    "高校ラグビーの見どころと注目ポイント",
+    "ラグビー観戦を初めて楽しむための基本ルール",
+    "ノックフォワードとスローフォワードの違いを初心者向けに教えて",
     "小さいチームが大きい相手に勝つための戦術"
   ];
 
@@ -1034,15 +1060,18 @@
   let currentTopicTitle = "";
   let displayedLog = [];
   let isGenerating = false;
+  let isBroadcasting = false; // 2人が話している間は true（割り込みボタンをグレーアウト）
   let voiceEnabled = true;
   let autoSendVoice = false;
+  let usedMicInSession = false; // iOSでマイク使用後の音量低下を補正するためのフラグ
 
   // AIリアル音声プレイヤー
   const aiAudio = new Audio();
   aiAudio.preload = "auto";
   aiAudio.playsInline = true;
+  aiAudio.volume = 1.0;
   let aiAudioUnlocked = false;
-  let activeAiClip = null; // { lines, ratios, shownCount }
+  let activeAiClip = null;
 
   // 端末音声フォールバック用
   let fallbackQueue = [];
@@ -1065,6 +1094,7 @@
     setupAiAudioEvents();
     renderSuggestedTopics();
     renderCutinChips();
+    updateCutinDockState();
     fetchNewsAndQuota(false);
   });
 
@@ -1083,7 +1113,7 @@
   }
 
   // =========================================================
-  // iOS Safari 音声アンロック & PCM→WAV 変換
+  // iOS Safari 音声アンロック & PCM自動音量アップ付きWAV変換
   // =========================================================
   function unlockAllAudio() {
     if (!voiceEnabled) return;
@@ -1110,16 +1140,58 @@
     }
   }
 
+  // 16bit PCMの音量を自動ノーマライズ（マイク使用後はソフトリミッターでさらに聴き取りやすく補正）
+  function boostPcm16Bytes(rawBytes, extraBoost) {
+    const sampleCount = Math.floor(rawBytes.length / 2);
+    if (sampleCount === 0) return rawBytes;
+
+    const srcView = new DataView(rawBytes.buffer, rawBytes.byteOffset, rawBytes.byteLength);
+    let maxAbs = 0;
+    for (let i = 0; i < sampleCount; i++) {
+      const a = Math.abs(srcView.getInt16(i * 2, true));
+      if (a > maxAbs) maxAbs = a;
+    }
+    if (maxAbs < 100) return rawBytes;
+
+    const outBytes = new Uint8Array(rawBytes.length);
+    const dstView = new DataView(outBytes.buffer);
+
+    if (extraBoost) {
+      // iPhoneマイク使用後の音量低下対策：ソフトクリップ付きで音圧をしっかり底上げ
+      const baseGain = Math.min(2.4, 30500 / maxAbs);
+      const drive = baseGain * 1.65;
+      const normFactor = Math.tanh(1.35);
+      for (let i = 0; i < sampleCount; i++) {
+        const s = srcView.getInt16(i * 2, true);
+        const scaled = (s * drive) / 32767;
+        const shaped = Math.tanh(scaled * 1.35) / normFactor;
+        const clamped = Math.max(-32767, Math.min(32767, Math.round(shaped * 31500)));
+        dstView.setInt16(i * 2, clamped, true);
+      }
+    } else {
+      // 通常時：クリアさを保ったままピークを93%付近まで引き上げ
+      const gain = Math.min(2.2, 30500 / maxAbs);
+      for (let i = 0; i < sampleCount; i++) {
+        const s = srcView.getInt16(i * 2, true);
+        const clamped = Math.max(-32767, Math.min(32767, Math.round(s * gain)));
+        dstView.setInt16(i * 2, clamped, true);
+      }
+    }
+    return outBytes;
+  }
+
   function audioPayloadToBlobUrl(audioObj) {
     if (!audioObj || !audioObj.data) return null;
     const mime = String(audioObj.mimeType || "audio/L16;codec=pcm;rate=24000");
     const binStr = atob(audioObj.data);
-    const bytes = new Uint8Array(binStr.length);
-    for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+    const rawBytes = new Uint8Array(binStr.length);
+    for (let i = 0; i < binStr.length; i++) rawBytes[i] = binStr.charCodeAt(i);
 
     if (/wav|mpeg|mp3|ogg|mp4|aac/i.test(mime)) {
-      return URL.createObjectURL(new Blob([bytes], { type: mime.split(";")[0] }));
+      return URL.createObjectURL(new Blob([rawBytes], { type: mime.split(";")[0] }));
     }
+
+    const bytes = boostPcm16Bytes(rawBytes, usedMicInSession);
 
     const rateMatch = mime.match(/rate=(\d+)/i);
     const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
@@ -1153,6 +1225,51 @@
   }
 
   // =========================================================
+  // 割り込みドックの状態一元管理（放送終了後に自動で有効化）
+  // =========================================================
+  function updateCutinDockState() {
+    const btnVoice = document.getElementById("btn-voice-cutin");
+    const btnText = document.getElementById("btn-open-cutin");
+    const hintEl = document.getElementById("dock-hint");
+
+    if (remainingQuota <= 0) {
+      btnVoice.disabled = true;
+      btnText.disabled = true;
+      btnVoice.innerHTML = "<span>🌙 本日の生放送枠終了</span>";
+      btnText.innerHTML = "<span>明日0時に復活</span>";
+      hintEl.style.display = "none";
+      return;
+    }
+
+    if (isGenerating) {
+      btnVoice.disabled = true;
+      btnText.disabled = true;
+      btnVoice.innerHTML = "<span>🎙️ 収録中...</span>";
+      btnText.innerHTML = "<span>お待ちください</span>";
+      hintEl.style.display = "block";
+      hintEl.textContent = "スタジオで2人が収録しています...";
+      return;
+    }
+
+    if (isBroadcasting) {
+      btnVoice.disabled = true;
+      btnText.disabled = true;
+      btnVoice.innerHTML = "<span>🎤 声で割り込む</span>";
+      btnText.innerHTML = "<span>✋ 文字・タグで割込</span>";
+      hintEl.style.display = "block";
+      hintEl.textContent = "📻 掛け合い放送中… 話し終わると割り込みできます";
+      return;
+    }
+
+    // 待機中（掛け合い完了後）：割り込み可能
+    btnVoice.disabled = false;
+    btnText.disabled = false;
+    btnVoice.innerHTML = "<span>🎤 声で割り込む</span>";
+    btnText.innerHTML = "<span>✋ 文字・タグで割込</span>";
+    hintEl.style.display = "none";
+  }
+
+  // =========================================================
   // AIリアル音声の再生・字幕タイミング同期
   // =========================================================
   function setupAiAudioEvents() {
@@ -1165,9 +1282,19 @@
     aiAudio.addEventListener("ended", () => {
       if (!activeAiClip) return;
       syncAiSubtitles(1.0);
+      isBroadcasting = false;
       highlightSpeaker(null);
       setOnAir(false);
-      appendSystemNotice("📻 トークひと区切り！下の「🎤 声で割り込む」から続きを話せます");
+      updateCutinDockState();
+      appendSystemNotice("📻 掛け合い終了！下のボタンから割り込みできます");
+    });
+
+    aiAudio.addEventListener("error", () => {
+      if (!activeAiClip) return;
+      isBroadcasting = false;
+      highlightSpeaker(null);
+      setOnAir(false);
+      updateCutinDockState();
     });
   }
 
@@ -1218,13 +1345,18 @@
 
     aiAudio.src = blobUrl;
     aiAudio.currentTime = 0;
+    aiAudio.volume = 1.0;
     aiAudio.muted = !voiceEnabled;
+    isBroadcasting = true;
     setOnAir(true);
+    updateCutinDockState();
 
     const playPromise = aiAudio.play();
     if (playPromise && playPromise.catch) {
       playPromise.catch(() => {
+        isBroadcasting = false;
         setOnAir(false);
+        updateCutinDockState();
         const log = document.getElementById("chat-log");
         const btn = document.createElement("button");
         btn.type = "button";
@@ -1232,9 +1364,16 @@
         btn.textContent = "▶ タップしてAIラジオ音声を再生";
         btn.addEventListener("click", () => {
           btn.remove();
+          aiAudio.volume = 1.0;
           aiAudio.muted = !voiceEnabled;
+          isBroadcasting = true;
           setOnAir(true);
-          aiAudio.play().catch(() => {});
+          updateCutinDockState();
+          aiAudio.play().catch(() => {
+            isBroadcasting = false;
+            setOnAir(false);
+            updateCutinDockState();
+          });
         });
         log.appendChild(btn);
         log.scrollTop = log.scrollHeight;
@@ -1243,23 +1382,27 @@
   }
 
   // =========================================================
-  // 端末音声フォールバック（AI音声が万が一取得できない時の保険）
+  // 端末音声フォールバック
   // =========================================================
   function startFallbackPlayback(lines) {
     stopAllAudio();
     fallbackQueue = lines;
     fallbackIdx = 0;
     isFallbackPlaying = true;
+    isBroadcasting = true;
     setOnAir(true);
+    updateCutinDockState();
     playFallbackAt(0);
   }
 
   function playFallbackAt(idx) {
     if (!isFallbackPlaying || idx >= fallbackQueue.length) {
       isFallbackPlaying = false;
+      isBroadcasting = false;
       highlightSpeaker(null);
       setOnAir(false);
-      appendSystemNotice("📻 トークひと区切り！下の「🎤 声で割り込む」から続きを話せます");
+      updateCutinDockState();
+      appendSystemNotice("📻 掛け合い終了！下のボタンから割り込みできます");
       return;
     }
 
@@ -1298,10 +1441,12 @@
   function stopAllAudio() {
     clearTimeout(fallbackTimer);
     isFallbackPlaying = false;
+    isBroadcasting = false;
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     aiAudio.pause();
     highlightSpeaker(null);
     setOnAir(false);
+    updateCutinDockState();
   }
 
   // =========================================================
@@ -1369,15 +1514,7 @@
     btnCustom.disabled = isEmpty;
     btnCustom.textContent = isEmpty ? "本日終了" : "放送開始";
 
-    document.getElementById("btn-voice-cutin").disabled = isEmpty;
-    document.getElementById("btn-open-cutin").disabled = isEmpty;
-    if (isEmpty) {
-      document.getElementById("btn-voice-cutin").innerHTML = "<span>🌙 本日の生放送枠終了</span>";
-      document.getElementById("btn-open-cutin").innerHTML = "<span>明日0時に復活</span>";
-    } else {
-      document.getElementById("btn-voice-cutin").innerHTML = "<span>🎤 声で割り込む</span>";
-      document.getElementById("btn-open-cutin").innerHTML = "<span>✋ 文字・タグで割込</span>";
-    }
+    updateCutinDockState();
     if (newsLoaded) renderNewsList();
   }
 
@@ -1455,7 +1592,6 @@
   // イベント設定
   // =========================================================
   function setupEvents() {
-    // 4項目タブ切替
     document.querySelectorAll(".genre-tab").forEach(tab => {
       tab.addEventListener("click", () => {
         stopListening();
@@ -1468,7 +1604,6 @@
       });
     });
 
-    // 音声ON/OFF切替
     document.getElementById("btn-voice-toggle").addEventListener("click", () => {
       voiceEnabled = !voiceEnabled;
       const btn = document.getElementById("btn-voice-toggle");
@@ -1480,12 +1615,10 @@
       }
     });
 
-    // ニュース強制再取得
     document.getElementById("btn-refresh-news").addEventListener("click", () => {
       fetchNewsAndQuota(true);
     });
 
-    // 一覧へ戻る
     document.getElementById("btn-back-lobby").addEventListener("click", () => {
       stopListening();
       stopAllAudio();
@@ -1493,20 +1626,20 @@
       showLobby();
     });
 
-    // 好きなテーマ送信 & マイク入力
     document.getElementById("btn-start-custom").addEventListener("click", handleCustomTopic);
     document.getElementById("btn-topic-mic").addEventListener("click", () => {
       if (isListening && activeMicTarget === "topic") stopListening();
       else startListening("topic");
     });
 
-    // 割り込み操作
     document.getElementById("btn-voice-cutin").addEventListener("click", () => {
+      if (isBroadcasting || isGenerating) return;
       openCutinForm(false);
       startListening("cutin");
     });
 
     document.getElementById("btn-open-cutin").addEventListener("click", () => {
+      if (isBroadcasting || isGenerating) return;
       openCutinForm(true);
     });
 
@@ -1520,12 +1653,6 @@
     document.getElementById("btn-cancel-cutin").addEventListener("click", () => {
       stopListening();
       closeCutinForm();
-      // 再生途中だったAI音声があれば静かに再開
-      if (activeAiClip && !aiAudio.ended && aiAudio.paused && aiAudio.currentTime > 0) {
-        aiAudio.muted = !voiceEnabled;
-        setOnAir(true);
-        aiAudio.play().catch(() => {});
-      }
     });
 
     document.getElementById("chk-autosend").addEventListener("change", (e) => {
@@ -1571,11 +1698,13 @@
     document.getElementById("custom-panel").style.display = "none";
     document.getElementById("studio-section").style.display = "block";
     document.getElementById("interrupt-dock").style.display = "block";
+    updateCutinDockState();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function openCutinForm(focusInput) {
     stopAllAudio();
+    document.getElementById("dock-hint").style.display = "none";
     document.getElementById("dock-btn-grid").style.display = "none";
     document.getElementById("interrupt-form").style.display = "block";
     if (focusInput) document.getElementById("cutin-input").focus();
@@ -1584,6 +1713,7 @@
   function closeCutinForm() {
     document.getElementById("interrupt-form").style.display = "none";
     document.getElementById("dock-btn-grid").style.display = "grid";
+    updateCutinDockState();
   }
 
   function updateCutinCharCount() {
@@ -1603,6 +1733,7 @@
     stopListening();
     stopAllAudio();
     activeMicTarget = target;
+    usedMicInSession = true;
 
     setTimeout(() => {
       try {
@@ -1645,10 +1776,11 @@
           const finishedTarget = activeMicTarget;
           isListening = false;
           activeMicTarget = null;
+          recognition = null;
           updateMicUI(false, finishedTarget);
 
           if (finishedTarget === "cutin" && autoSendVoice && latestText) {
-            setTimeout(() => handleInterruptSubmit(), 250);
+            setTimeout(() => handleInterruptSubmit(), 350);
           }
         };
 
@@ -1665,6 +1797,7 @@
   function stopListening() {
     if (recognition) {
       try { recognition.stop(); } catch (e) {}
+      try { recognition.abort(); } catch (e) {}
       recognition = null;
     }
     const prev = activeMicTarget;
@@ -1705,11 +1838,14 @@
       });
 
       loadingEl.remove();
+      isGenerating = false;
       playBroadcastResponse(data);
     } catch (e) {
       loadingEl.remove();
+      isGenerating = false;
     } finally {
       isGenerating = false;
+      updateCutinDockState();
     }
   }
 
@@ -1744,21 +1880,24 @@
       });
 
       loadingEl.remove();
+      isGenerating = false;
       if (data && data.lines && data.lines.length > 0) {
         input.value = "";
       }
       playBroadcastResponse(data);
     } catch (e) {
       loadingEl.remove();
+      isGenerating = false;
     } finally {
       isGenerating = false;
       btn.disabled = remainingQuota <= 0;
       btn.textContent = remainingQuota <= 0 ? "本日終了" : "放送開始";
+      updateCutinDockState();
     }
   }
 
   async function handleInterruptSubmit() {
-    if (isGenerating) return;
+    if (isGenerating || isBroadcasting) return;
     stopListening();
     const input = document.getElementById("cutin-input");
     const text = input.value.trim();
@@ -1787,6 +1926,7 @@
     input.value = "";
     updateCutinCharCount();
     closeCutinForm();
+    updateCutinDockState();
 
     const loadingEl = appendSystemNotice("🎙️ 2人があなたの割り込みへの返答を収録中（約5〜10秒）...");
     sendGaEvent("interrupt_talk", { tab: currentTab });
@@ -1800,18 +1940,24 @@
       });
 
       loadingEl.remove();
+      isGenerating = false;
       playBroadcastResponse(data);
     } catch (e) {
       loadingEl.remove();
+      isGenerating = false;
     } finally {
       isGenerating = false;
       btn.disabled = false;
       btn.textContent = "割り込む";
+      updateCutinDockState();
     }
   }
 
   function playBroadcastResponse(data) {
-    if (!data || !data.lines || data.lines.length === 0) return;
+    if (!data || !data.lines || data.lines.length === 0) {
+      updateCutinDockState();
+      return;
+    }
     if (data.audio) {
       const blobUrl = audioPayloadToBlobUrl(data.audio);
       startAiAudioClip(blobUrl, data.lines);

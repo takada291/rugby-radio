@@ -51,7 +51,7 @@
     header {
       background: linear-gradient(135deg, #0f172a 0%, #14532d 100%);
       color: #fff;
-      padding: 10px 14px;
+      padding: 10px 12px;
       position: sticky;
       top: 0;
       z-index: 30;
@@ -62,48 +62,33 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .brand {
       display: flex;
-      align-items: center;
-      gap: 6px;
+      align-items: baseline;
+      gap: 5px;
       min-width: 0;
+      overflow: hidden;
     }
 
     .brand h1 {
       margin: 0;
-      font-size: 1rem;
+      font-size: 0.96rem;
       font-weight: 800;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.01em;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .onair-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 999px;
-      padding: 2px 7px;
-      font-size: 0.65rem;
-      font-weight: 800;
-      color: #cbd5e1;
+    .ver-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94a3b8;
       white-space: nowrap;
-    }
-
-    .onair-pill.live {
-      background: #dc2626;
-      border-color: #f87171;
-      color: #fff;
-      animation: pulse 1.4s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.65; }
+      flex-shrink: 0;
     }
 
     .header-controls {
@@ -130,7 +115,7 @@
       color: #94a3b8;
     }
 
-    /* 残り生放送枠バー */
+    /* 残り生放送枠＆ON AIRバー */
     .quota-bar {
       margin-top: 7px;
       background: rgba(15, 23, 42, 0.45);
@@ -140,6 +125,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 8px;
       font-size: 0.74rem;
     }
 
@@ -148,20 +134,43 @@
       align-items: center;
       gap: 5px;
       color: #e2e8f0;
+      white-space: nowrap;
     }
 
     .quota-num {
       font-weight: 900;
       color: #fde047;
-      font-size: 0.86rem;
+      font-size: 0.85rem;
     }
 
     .quota-num.low { color: #fb923c; }
     .quota-num.empty { color: #f87171; }
 
-    .quota-note {
-      font-size: 0.66rem;
+    .onair-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.65rem;
+      font-weight: 800;
       color: #cbd5e1;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .onair-pill.live {
+      background: #dc2626;
+      border-color: #f87171;
+      color: #fff;
+      animation: pulse 1.4s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.65; }
     }
 
     main {
@@ -238,6 +247,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 8px;
+      gap: 6px;
     }
 
     .section-head h2 {
@@ -254,6 +264,7 @@
       font-weight: 800;
       padding: 2px 7px;
       border-radius: 999px;
+      white-space: nowrap;
     }
 
     .badge-api {
@@ -263,6 +274,7 @@
       font-weight: 800;
       padding: 2px 7px;
       border-radius: 999px;
+      white-space: nowrap;
     }
 
     /* お題リスト */
@@ -785,6 +797,8 @@
       width: 100%;
       padding: 16px;
       box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .modal-title {
@@ -795,26 +809,32 @@
     }
 
     .modal-note {
-      font-size: 0.74rem;
+      font-size: 0.73rem;
       color: var(--muted);
       margin: 0 0 12px 0;
+      line-height: 1.45;
     }
 
     .voice-field {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px;
       margin-bottom: 10px;
     }
 
     .voice-field label {
       display: block;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       font-weight: 800;
       color: #1e293b;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
 
     .voice-select-row {
       display: flex;
       gap: 6px;
+      margin-bottom: 8px;
     }
 
     .voice-select-row select {
@@ -824,7 +844,7 @@
       border-radius: 8px;
       padding: 7px 8px;
       font-size: 0.8rem;
-      background: #f8fafc;
+      background: #fff;
     }
 
     .btn-preview-v {
@@ -839,11 +859,32 @@
       white-space: nowrap;
     }
 
+    .pitch-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.73rem;
+      color: #475569;
+      font-weight: 700;
+    }
+
+    .pitch-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--green);
+    }
+
+    .pitch-val {
+      width: 34px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: var(--bg);
+    }
+
     .modal-actions {
       display: flex;
       justify-content: space-between;
       gap: 8px;
-      margin-top: 14px;
+      margin-top: 12px;
     }
 
     .btn-modal-sub {
@@ -875,8 +916,8 @@
 <header>
   <div class="header-top">
     <div class="brand">
-      <h1>🎙️ ラグビーAIラジオ v1.1</h1>
-      <span class="onair-pill" id="onair-badge">STANDBY</span>
+      <h1>🎙️ ラグビーAIラジオ</h1>
+      <span class="ver-tag">v1.2</span>
     </div>
     <div class="header-controls">
       <button type="button" class="btn-header" id="btn-voice-settings">⚙️ 声設定</button>
@@ -889,7 +930,7 @@
       <span class="quota-num" id="quota-remaining">確認中...</span>
       <span id="quota-total"></span>
     </div>
-    <span class="quota-note">プリセット視聴は0回消費</span>
+    <span class="onair-pill" id="onair-badge">STANDBY</span>
   </div>
 </header>
 
@@ -1013,7 +1054,7 @@
   <div class="modal-card">
     <div class="modal-title" id="voice-modal-title">⚙️ パーソナリティの声設定</div>
     <p class="modal-note">
-      端末内の自然な日本語音声（Hattori / Kyoko / O-ren / Otoya 等）を優先して自動選択しています。お好みで変更・試し聞きできます。
+      iPhoneなど初期音声が1種類（Kyokoのみ）の端末では、自動で声の高さを下げて男性風に聞き分けられるようにしています。スライダーでお好みに微調整できます。
     </p>
 
     <div class="voice-field">
@@ -1021,6 +1062,11 @@
       <div class="voice-select-row">
         <select id="select-voice-a"></select>
         <button type="button" class="btn-preview-v" id="btn-test-a">🔊 試し聞き</button>
+      </div>
+      <div class="pitch-row">
+        <span>声の高さ(低〜高)</span>
+        <input type="range" id="pitch-a" min="0.50" max="1.40" step="0.02">
+        <span class="pitch-val" id="pitch-val-a">0.68</span>
       </div>
     </div>
 
@@ -1030,10 +1076,15 @@
         <select id="select-voice-b"></select>
         <button type="button" class="btn-preview-v" id="btn-test-b">🔊 試し聞き</button>
       </div>
+      <div class="pitch-row">
+        <span>声の高さ(低〜高)</span>
+        <input type="range" id="pitch-b" min="0.50" max="1.40" step="0.02">
+        <span class="pitch-val" id="pitch-val-b">1.14</span>
+      </div>
     </div>
 
     <div class="modal-actions">
-      <button type="button" class="btn-modal-sub" id="btn-voice-reset">自動選択に戻す</button>
+      <button type="button" class="btn-modal-sub" id="btn-voice-reset">自動設定に戻す</button>
       <button type="button" class="btn-modal-ok" id="btn-voice-close">保存して閉じる</button>
     </div>
   </div>
@@ -1041,31 +1092,31 @@
 
 <script>
   // =========================================================
-  // ★ デプロイしたGASのウェブアプリURLをここに貼り付けます
+  // ★ デプロイしたGASのウェブアプリURL
   // =========================================================
   const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxuRzJQyOnN6WDvaMCjZdipb38mo9lZixi-BkEvvtNr7IqegvmEgpXkYvlCfi3KFbNT/exec";
 
-  const PREF_KEY = "rugby_radio_prefs_v11";
+  const PREF_KEY = "rugby_radio_prefs_v12";
 
-  // 機械的なノベルティ音声を除外するためのパターン（iOSのEddy/Flo等）
+  // 機械的なノベルティ音声を除外するためのパターン
   const ROBOTIC_VOICE_REGEX = /eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley|albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox/i;
 
   // 自然な男性・女性音声の優先リスト
   const MALE_HINTS = ["hattori", "otoya", "keita", "ichiro", "takumi", "kenji", "daichi", "male"];
   const FEMALE_HINTS = ["kyoko", "o-ren", "nanami", "haruka", "ayumi", "sayaka", "mizuki", "mayu", "google 日本語", "female"];
 
-  // チャンネル設定（自然なピッチ幅に調整）
+  // チャンネル設定（別々の声がある場合と、同じ声しかない場合のピッチを分離）
   const CHANNELS = {
     casual: {
       title: "観戦ゆるトーク枠",
-      hostA: { name: "ケンジ", role: "元ラガーマン解説", icon: "🏉", gender: "male", pitch: 0.98, rateOffset: 0.0 },
-      hostB: { name: "ミホ", role: "観戦ビギナー保護者", icon: "📣", gender: "female", pitch: 1.04, rateOffset: 0.03 },
+      hostA: { name: "ケンジ", role: "元ラガーマン解説", icon: "🏉", gender: "male", pitch: 0.98, sameVoicePitch: 0.68, rateOffset: -0.02 },
+      hostB: { name: "ミホ", role: "観戦ビギナー保護者", icon: "📣", gender: "female", pitch: 1.04, sameVoicePitch: 1.14, rateOffset: 0.04 },
       chips: ["それどういう意味？", "もっと例え話で！", "観戦時の見どころは？", "高校ラグビーだとどう？"]
     },
     heated: {
       title: "FW vs BK 激論枠",
-      hostA: { name: "ゴリ", role: "FW派・熱血コーチ", icon: "🦬", gender: "male", pitch: 0.93, rateOffset: 0.01 },
-      hostB: { name: "シュン", role: "BK派・理論コーチ", icon: "⚡", gender: "male2", pitch: 1.04, rateOffset: 0.05 },
+      hostA: { name: "ゴリ", role: "FW派・熱血コーチ", icon: "🦬", gender: "male", pitch: 0.92, sameVoicePitch: 0.60, rateOffset: -0.02 },
+      hostB: { name: "シュン", role: "BK派・理論コーチ", icon: "⚡", gender: "male2", pitch: 1.04, sameVoicePitch: 0.86, rateOffset: 0.06 },
       chips: ["いや反論あり！", "結局どっちが大事？", "小さいチームはどう戦う？", "花園ならどうなる？"]
     }
   };
@@ -1202,6 +1253,10 @@
     voices: {
       casual: { A: "", B: "" },
       heated: { A: "", B: "" }
+    },
+    pitches: {
+      casual: { A: null, B: null },
+      heated: { A: null, B: null }
     }
   };
 
@@ -1209,14 +1264,13 @@
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
   let recognition = null;
   let isListening = false;
-  let activeMicTarget = null; // "cutin" | "topic"
+  let activeMicTarget = null;
 
   // 残数状態
   let remainingQuota = 100;
   let dailyLimit = 100;
   let isTestMode = !GAS_API_URL;
 
-  // 初期化
   window.addEventListener("DOMContentLoaded", () => {
     loadPrefs();
     setupEvents();
@@ -1241,6 +1295,10 @@
           prefs.voices.casual = { ...prefs.voices.casual, ...(saved.voices.casual || {}) };
           prefs.voices.heated = { ...prefs.voices.heated, ...(saved.voices.heated || {}) };
         }
+        if (saved.pitches) {
+          prefs.pitches.casual = { ...prefs.pitches.casual, ...(saved.pitches.casual || {}) };
+          prefs.pitches.heated = { ...prefs.pitches.heated, ...(saved.pitches.heated || {}) };
+        }
       }
     } catch (e) {}
     document.getElementById("voice-speed").value = prefs.speed;
@@ -1253,12 +1311,19 @@
     } catch (e) {}
   }
 
-  // 日本語音声の読み込みと自然な音声のランキング
+  // 日本語音声の読み込み（重複名も整理）
   function initVoices() {
     if (!("speechSynthesis" in window)) return;
     const refresh = () => {
       const all = window.speechSynthesis.getVoices() || [];
-      cachedJaVoices = all.filter(v => v.lang && (v.lang.toLowerCase().startsWith("ja") || v.lang.toLowerCase().includes("jp")));
+      const ja = all.filter(v => v.lang && (v.lang.toLowerCase().startsWith("ja") || v.lang.toLowerCase().includes("jp")));
+      // 同名音声の重複を除去（高品質版を優先保持）
+      const map = new Map();
+      ja.sort((a, b) => voiceQualityScore(b) - voiceQualityScore(a)).forEach(v => {
+        const key = (v.name || "").trim();
+        if (!map.has(key)) map.set(key, v);
+      });
+      cachedJaVoices = Array.from(map.values());
     };
     refresh();
     window.speechSynthesis.onvoiceschanged = refresh;
@@ -1266,19 +1331,15 @@
 
   function getSortedNaturalVoices() {
     if (!cachedJaVoices.length && "speechSynthesis" in window) {
-      cachedJaVoices = (window.speechSynthesis.getVoices() || []).filter(
-        v => v.lang && (v.lang.toLowerCase().startsWith("ja") || v.lang.toLowerCase().includes("jp"))
-      );
+      initVoices();
     }
     const clean = cachedJaVoices.filter(v => !ROBOTIC_VOICE_REGEX.test(v.name));
     const list = clean.length > 0 ? clean : cachedJaVoices;
-
-    // 高品質音声を優先ソート
     return [...list].sort((a, b) => voiceQualityScore(b) - voiceQualityScore(a));
   }
 
   function voiceQualityScore(v) {
-    const n = (v.name || "").toLowerCase();
+    const n = ((v.name || "") + " " + (v.voiceURI || "")).toLowerCase();
     let score = 0;
     if (n.includes("enhanced") || n.includes("premium") || n.includes("natural") || n.includes("online")) score += 50;
     if (n.includes("siri")) score += 40;
@@ -1293,7 +1354,6 @@
     const voices = getSortedNaturalVoices();
     if (!voices.length) return null;
 
-    // ユーザーが明示的に選んだ音声があれば最優先
     const savedName = prefs.voices[channelKey]?.[speakerKey];
     if (savedName) {
       const exact = cachedJaVoices.find(v => v.name === savedName);
@@ -1323,6 +1383,19 @@
     return voices[0];
   }
 
+  function getEffectivePitch(channelKey, speakerKey) {
+    const custom = prefs.pitches[channelKey]?.[speakerKey];
+    if (typeof custom === "number" && !isNaN(custom)) return custom;
+
+    const ch = CHANNELS[channelKey];
+    const host = speakerKey === "A" ? ch.hostA : ch.hostB;
+    const voiceA = pickVoiceForHost(channelKey, "A");
+    const voiceB = pickVoiceForHost(channelKey, "B");
+    const sameVoice = !voiceA || !voiceB || voiceA.name === voiceB.name;
+
+    return sameVoice ? host.sameVoicePitch : host.pitch;
+  }
+
   // iOS Safari対策：ユーザータップ直後に音声合成のロックを解除
   function unlockSpeech() {
     if (!voiceEnabled || !("speechSynthesis" in window)) return;
@@ -1334,7 +1407,6 @@
     } catch (e) {}
   }
 
-  // 残り生放送枠の取得
   async function initQuota() {
     if (isTestMode) {
       updateQuotaUI(100, 100);
@@ -1387,7 +1459,6 @@
   }
 
   function setupEvents() {
-    // チャンネル切替
     document.querySelectorAll(".ch-tab").forEach(tab => {
       tab.addEventListener("click", () => {
         if (currentChannel === tab.dataset.ch) return;
@@ -1401,7 +1472,6 @@
       });
     });
 
-    // 音声ON/OFF切替
     document.getElementById("btn-voice-toggle").addEventListener("click", () => {
       voiceEnabled = !voiceEnabled;
       const btn = document.getElementById("btn-voice-toggle");
@@ -1422,48 +1492,65 @@
       savePrefs();
       document.getElementById("voice-modal").style.display = "none";
     });
+    document.getElementById("voice-modal").addEventListener("click", (e) => {
+      if (e.target.id === "voice-modal") {
+        savePrefs();
+        document.getElementById("voice-modal").style.display = "none";
+      }
+    });
     document.getElementById("btn-voice-reset").addEventListener("click", () => {
       prefs.voices[currentChannel] = { A: "", B: "" };
+      prefs.pitches[currentChannel] = { A: null, B: null };
       savePrefs();
       openVoiceModal();
     });
     document.getElementById("select-voice-a").addEventListener("change", (e) => {
       prefs.voices[currentChannel].A = e.target.value;
       savePrefs();
+      syncPitchSliders();
     });
     document.getElementById("select-voice-b").addEventListener("change", (e) => {
       prefs.voices[currentChannel].B = e.target.value;
       savePrefs();
+      syncPitchSliders();
+    });
+    document.getElementById("pitch-a").addEventListener("input", (e) => {
+      const val = parseFloat(e.target.value);
+      prefs.pitches[currentChannel].A = val;
+      document.getElementById("pitch-val-a").textContent = val.toFixed(2);
+      savePrefs();
+    });
+    document.getElementById("pitch-b").addEventListener("input", (e) => {
+      const val = parseFloat(e.target.value);
+      prefs.pitches[currentChannel].B = val;
+      document.getElementById("pitch-val-b").textContent = val.toFixed(2);
+      savePrefs();
     });
     document.getElementById("btn-test-a").addEventListener("click", () => {
       const h = CHANNELS[currentChannel].hostA;
-      speakLine("A", `こんにちは、${h.name}です。ラグビーAIラジオをお聴きいただきありがとうございます！`, () => {});
+      speakLine("A", `こんにちは、${h.name}です。ラグビーAIラジオ、今日も熱く語っていくよ！`, () => {});
     });
     document.getElementById("btn-test-b").addEventListener("click", () => {
       const h = CHANNELS[currentChannel].hostB;
-      speakLine("B", `こんにちは、${h.name}です！今日も楽しくラグビーの話をしましょうね！`, () => {});
+      speakLine("B", `こんにちは、${h.name}です！よろしくお願いします！`, () => {});
     });
 
-    // 速度変更の保存
     document.getElementById("voice-speed").addEventListener("change", (e) => {
       prefs.speed = e.target.value;
       savePrefs();
     });
 
-    // 音声入力後の自動送信トグル
     document.getElementById("chk-autosend").addEventListener("change", (e) => {
       prefs.autoSendVoice = e.target.checked;
       savePrefs();
     });
 
-    // 番組一覧へ戻る
     document.getElementById("btn-back-lobby").addEventListener("click", () => {
       stopListening();
       stopPlayback();
       showLobby();
     });
 
-    // 一時停止 / 再開
     document.getElementById("btn-play-pause").addEventListener("click", () => {
       unlockSpeech();
       if (!isPlaying && currentIndex >= queue.length) {
@@ -1477,7 +1564,6 @@
       }
     });
 
-    // 次のセリフへスキップ
     document.getElementById("btn-next-line").addEventListener("click", () => {
       unlockSpeech();
       if (currentIndex < queue.length) {
@@ -1488,13 +1574,11 @@
       }
     });
 
-    // 最初から聴き直す
     document.getElementById("btn-replay").addEventListener("click", () => {
       unlockSpeech();
       replayFromStart();
     });
 
-    // 自由お題で放送開始 & マイク入力
     document.getElementById("btn-start-custom").addEventListener("click", handleCustomTopic);
     document.getElementById("btn-topic-mic").addEventListener("click", () => {
       if (isListening && activeMicTarget === "topic") {
@@ -1504,18 +1588,15 @@
       }
     });
 
-    // 🎤 声で割り込む（一発起動）
     document.getElementById("btn-voice-cutin").addEventListener("click", () => {
       openCutinForm(false);
       startListening("cutin");
     });
 
-    // ✋ 文字・タグで割り込む
     document.getElementById("btn-open-cutin").addEventListener("click", () => {
       openCutinForm(true);
     });
 
-    // フォーム内のマイクボタン
     document.getElementById("btn-cutin-mic").addEventListener("click", () => {
       if (isListening && activeMicTarget === "cutin") {
         stopListening();
@@ -1526,7 +1607,6 @@
 
     document.getElementById("btn-stop-mic").addEventListener("click", stopListening);
 
-    // 割り込みパネルを閉じる
     document.getElementById("btn-cancel-cutin").addEventListener("click", () => {
       stopListening();
       closeCutinForm();
@@ -1535,10 +1615,7 @@
       }
     });
 
-    // 文字数カウント
     document.getElementById("cutin-input").addEventListener("input", updateCutinCharCount);
-
-    // 割り込み送信
     document.getElementById("btn-send-cutin").addEventListener("click", handleInterruptSubmit);
   }
 
@@ -1561,8 +1638,17 @@
     document.getElementById("cutin-char-count").textContent = `${len} / 100文字（枠1回消費）`;
   }
 
-  // 声設定モーダルを開く
+  function syncPitchSliders() {
+    const pA = getEffectivePitch(currentChannel, "A");
+    const pB = getEffectivePitch(currentChannel, "B");
+    document.getElementById("pitch-a").value = pA;
+    document.getElementById("pitch-val-a").textContent = pA.toFixed(2);
+    document.getElementById("pitch-b").value = pB;
+    document.getElementById("pitch-val-b").textContent = pB.toFixed(2);
+  }
+
   function openVoiceModal() {
+    initVoices();
     const ch = CHANNELS[currentChannel];
     document.getElementById("voice-modal-title").textContent = `⚙️ ${ch.title} の声設定`;
     document.getElementById("label-voice-a").textContent = `${ch.hostA.icon} ${ch.hostA.name}（${ch.hostA.role}）`;
@@ -1591,15 +1677,14 @@
 
     buildOptions(document.getElementById("select-voice-a"), prefs.voices[currentChannel].A, autoA);
     buildOptions(document.getElementById("select-voice-b"), prefs.voices[currentChannel].B, autoB);
+    syncPitchSliders();
     document.getElementById("voice-modal").style.display = "flex";
   }
 
-  // =========================================================
-  // マイク音声入力（Web Speech Recognition）
-  // =========================================================
+  // マイク音声入力
   function startListening(target) {
     if (!SpeechRec) {
-      alert("お使いのブラウザは音声入力ボタンに対応していません。入力欄をタップしてスマホのキーボードのマイクボタンをお使いください。");
+      alert("お使いのブラウザは音声入力ボタンに対応していません。入力欄をタップしてキーボードのマイクボタンをお使いください。");
       return;
     }
 
@@ -1607,7 +1692,6 @@
     pausePlayback();
     activeMicTarget = target;
 
-    // iOSで再生セッションから録音セッションへ切り替わるまで少し待つ
     setTimeout(() => {
       try {
         recognition = new SpeechRec();
@@ -1751,7 +1835,6 @@
     document.getElementById("interrupt-dock").style.display = "block";
   }
 
-  // 番組開始
   function startBroadcast(title, lines) {
     stopPlayback();
     currentTopicTitle = title;
@@ -1829,18 +1912,13 @@
     const ch = CHANNELS[currentChannel];
     const host = speaker === "A" ? ch.hostA : ch.hostB;
     const baseSpeed = parseFloat(document.getElementById("voice-speed").value || "1.0");
-
-    const voiceA = pickVoiceForHost(currentChannel, "A");
-    const voiceB = pickVoiceForHost(currentChannel, "B");
-    const selectedVoice = speaker === "A" ? voiceA : voiceB;
+    const selectedVoice = pickVoiceForHost(currentChannel, speaker);
 
     if (selectedVoice) {
       uttr.voice = selectedVoice;
     }
 
-    // 2人が異なる自然な声で話せる場合はピッチをほぼ等倍にして自然さ優先
-    const sameVoice = voiceA && voiceB && voiceA.name === voiceB.name;
-    uttr.pitch = sameVoice ? (speaker === "A" ? 0.94 : 1.07) : host.pitch;
+    uttr.pitch = getEffectivePitch(currentChannel, speaker);
     uttr.rate = Math.min(1.6, Math.max(0.75, baseSpeed + host.rateOffset));
 
     let finished = false;
@@ -1958,7 +2036,6 @@
     return div;
   }
 
-  // 自由お題で新番組スタート
   async function handleCustomTopic() {
     if (isGenerating) return;
     stopListening();
@@ -1998,7 +2075,6 @@
     }
   }
 
-  // 会話への割り込み送信
   async function handleInterruptSubmit() {
     if (isGenerating) return;
     stopListening();
@@ -2063,7 +2139,6 @@
     }
   }
 
-  // GASへリクエスト送信
   async function requestAiLines(payload) {
     if (isTestMode) {
       await new Promise(r => setTimeout(r, 800));

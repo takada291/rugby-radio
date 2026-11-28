@@ -267,6 +267,69 @@
       cursor: not-allowed;
     }
 
+    /* ニュース一気聴きボタン（一覧最上部） */
+    .btn-digest-banner {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 11px 12px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+      box-shadow: 0 3px 10px rgba(29, 78, 216, 0.25);
+      transition: transform 0.12s ease, opacity 0.15s ease;
+    }
+
+    .btn-digest-banner:active {
+      transform: scale(0.99);
+    }
+
+    .btn-digest-banner:disabled {
+      background: #94a3b8;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .digest-left {
+      min-width: 0;
+    }
+
+    .digest-main-text {
+      font-size: 0.88rem;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .digest-sub-text {
+      font-size: 0.7rem;
+      color: #cbd5e1;
+      margin-top: 2px;
+    }
+
+    .digest-pill {
+      flex-shrink: 0;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 5px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .digest-pill.ready {
+      background: #fde047;
+      color: #0f172a;
+      border-color: #fde047;
+    }
+
     /* ニュース一覧 */
     .news-list {
       display: flex;
@@ -455,7 +518,7 @@
       white-space: nowrap;
     }
 
-    /* ラジオブース（再生＆割り込み専用画面） */
+    /* ラジオブース */
     #studio-section {
       display: none;
     }
@@ -666,6 +729,40 @@
       box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
     }
 
+    /* 一気聴きで取り上げたニュース一覧ボックス */
+    .digest-topics-box {
+      display: none;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed #cbd5e1;
+    }
+
+    .digest-topics-head {
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .digest-topic-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      padding: 6px 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 5px;
+    }
+
+    .digest-topic-row span {
+      color: #1e293b;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
     .app-disclaimer {
       text-align: center;
       font-size: 0.68rem;
@@ -865,7 +962,7 @@
   <div class="header-top">
     <div class="brand">
       <h1>🎙️ ラグビーAIラジオ</h1>
-      <span class="ver-tag">v3.1</span>
+      <span class="ver-tag">v3.2</span>
     </div>
     <button type="button" class="btn-header" id="btn-voice-toggle">🔊 音声ON</button>
   </div>
@@ -904,12 +1001,22 @@
   <section id="news-panel">
     <div class="card">
       <div class="section-head">
-        <h2 id="news-heading">📰 高校ラグビーの最新ニュース</h2>
+        <h2 id="news-heading">🏫 高校ラグビーの最新ニュース</h2>
         <div class="head-actions">
           <span class="news-updated" id="news-updated"></span>
           <button type="button" class="btn-refresh" id="btn-refresh-news">🔄 更新</button>
         </div>
       </div>
+
+      <!-- ニュース一気聴きボタン（一覧の最上部） -->
+      <button type="button" class="btn-digest-banner" id="btn-digest-play" style="display:none;">
+        <div class="digest-left">
+          <div class="digest-main-text" id="digest-btn-title">📻 ニュースを一気聴き（割り込み無し）</div>
+          <div class="digest-sub-text" id="digest-btn-sub">最新トップ3本をノンストップで掛け合い解説</div>
+        </div>
+        <span class="digest-pill" id="digest-btn-pill">▶ 一気聴き</span>
+      </button>
+
       <div class="news-list" id="news-list">
         <div class="news-empty">📡 最新ニュースを読み込んでいます...</div>
       </div>
@@ -936,7 +1043,7 @@
     </div>
   </section>
 
-  <!-- ラジオブース（再生＆割り込み専用画面） -->
+  <!-- ラジオブース -->
   <section id="studio-section">
     <div class="card">
       <div class="studio-top">
@@ -965,6 +1072,12 @@
       </div>
 
       <div class="chat-log" id="chat-log"></div>
+
+      <!-- 一気聴きで紹介したニュースの元記事リンク -->
+      <div class="digest-topics-box" id="digest-topics-box">
+        <div class="digest-topics-head">📰 今回紹介したニュース</div>
+        <div id="digest-topics-list"></div>
+      </div>
     </div>
   </section>
 
@@ -973,7 +1086,7 @@
   </p>
 </main>
 
-<!-- 下部固定 割り込みドック -->
+<!-- 下部固定 割り込みドック（一気聴きモード時は非表示） -->
 <div class="interrupt-dock" id="interrupt-dock">
   <div class="interrupt-inner">
     <div class="dock-hint" id="dock-hint"></div>
@@ -1024,7 +1137,6 @@
     custom:     { label: "好きなテーマ", heading: "✨ 好きなテーマ" }
   };
 
-  // 好きなテーマ枠のワンタップおすすめお題
   const SUGGESTED_TOPICS = [
     "高校ラグビーの見どころと注目ポイント",
     "ラグビー観戦を初めて楽しむための基本ルール",
@@ -1032,7 +1144,6 @@
     "小さいチームが大きい相手に勝つための戦術"
   ];
 
-  // 割り込みワンタップチップ
   const CUTIN_CHIPS = [
     "もっと詳しく教えて！",
     "注目ポイント・見どころは？",
@@ -1040,7 +1151,6 @@
     "別の視点・反論ある？"
   ];
 
-  // 端末音声フォールバック用読み辞書
   const LOCAL_PRONUNCIATION_MAP = [
     ["大阪桐蔭", "おおさかとういん"],
     ["桐蔭学園", "とういんがくえん"],
@@ -1055,15 +1165,22 @@
   // =========================================================
   let currentTab = "highschool";
   let newsCache = { highschool: [], leagueone: [], japan: [] };
+  let digestStatus = {
+    highschool: { ready: false, createdAt: "" },
+    leagueone:  { ready: false, createdAt: "" },
+    japan:      { ready: false, createdAt: "" }
+  };
+  let digestMemoryCache = {}; // { categoryKey: { digest, blobUrl } }
   let newsLoaded = false;
 
   let currentTopicTitle = "";
+  let isDigestMode = false; // 一気聴き再生中は true（割り込みバー非表示）
   let displayedLog = [];
   let isGenerating = false;
-  let isBroadcasting = false; // 2人が話している間は true（割り込みボタンをグレーアウト）
+  let isBroadcasting = false;
   let voiceEnabled = true;
   let autoSendVoice = false;
-  let usedMicInSession = false; // iOSでマイク使用後の音量低下を補正するためのフラグ
+  let usedMicInSession = false;
 
   // AIリアル音声プレイヤー
   const aiAudio = new Audio();
@@ -1140,7 +1257,6 @@
     }
   }
 
-  // 16bit PCMの音量を自動ノーマライズ（マイク使用後はソフトリミッターでさらに聴き取りやすく補正）
   function boostPcm16Bytes(rawBytes, extraBoost) {
     const sampleCount = Math.floor(rawBytes.length / 2);
     if (sampleCount === 0) return rawBytes;
@@ -1157,7 +1273,6 @@
     const dstView = new DataView(outBytes.buffer);
 
     if (extraBoost) {
-      // iPhoneマイク使用後の音量低下対策：ソフトクリップ付きで音圧をしっかり底上げ
       const baseGain = Math.min(2.4, 30500 / maxAbs);
       const drive = baseGain * 1.65;
       const normFactor = Math.tanh(1.35);
@@ -1169,7 +1284,6 @@
         dstView.setInt16(i * 2, clamped, true);
       }
     } else {
-      // 通常時：クリアさを保ったままピークを93%付近まで引き上げ
       const gain = Math.min(2.2, 30500 / maxAbs);
       for (let i = 0; i < sampleCount; i++) {
         const s = srcView.getInt16(i * 2, true);
@@ -1225,9 +1339,10 @@
   }
 
   // =========================================================
-  // 割り込みドックの状態一元管理（放送終了後に自動で有効化）
+  // 割り込みドックの状態管理
   // =========================================================
   function updateCutinDockState() {
+    if (isDigestMode) return;
     const btnVoice = document.getElementById("btn-voice-cutin");
     const btnText = document.getElementById("btn-open-cutin");
     const hintEl = document.getElementById("dock-hint");
@@ -1261,7 +1376,6 @@
       return;
     }
 
-    // 待機中（掛け合い完了後）：割り込み可能
     btnVoice.disabled = false;
     btnText.disabled = false;
     btnVoice.innerHTML = "<span>🎤 声で割り込む</span>";
@@ -1286,7 +1400,11 @@
       highlightSpeaker(null);
       setOnAir(false);
       updateCutinDockState();
-      appendSystemNotice("📻 掛け合い終了！下のボタンから割り込みできます");
+      if (isDigestMode) {
+        appendSystemNotice("📻 ニュース一気聴き 終了！一覧へ戻って他ジャンルもどうぞ");
+      } else {
+        appendSystemNotice("📻 掛け合い終了！下のボタンから割り込みできます");
+      }
     });
 
     aiAudio.addEventListener("error", () => {
@@ -1402,7 +1520,11 @@
       highlightSpeaker(null);
       setOnAir(false);
       updateCutinDockState();
-      appendSystemNotice("📻 掛け合い終了！下のボタンから割り込みできます");
+      appendSystemNotice(
+        isDigestMode
+          ? "📻 ニュース一気聴き 終了！一覧へ戻って他ジャンルもどうぞ"
+          : "📻 掛け合い終了！下のボタンから割り込みできます"
+      );
       return;
     }
 
@@ -1450,7 +1572,7 @@
   }
 
   // =========================================================
-  // ニュース一覧＆残数の取得（API枠0回消費）
+  // ニュース一覧＆残数＆一気聴きステータスの取得（枠0回消費）
   // =========================================================
   async function fetchNewsAndQuota(forceRefresh) {
     const refreshBtn = document.getElementById("btn-refresh-news");
@@ -1476,6 +1598,9 @@
             japan: data.news.japan || []
           };
           newsLoaded = true;
+        }
+        if (data.digestStatus) {
+          digestStatus = { ...digestStatus, ...data.digestStatus };
         }
         if (data.updatedAt) {
           document.getElementById("news-updated").textContent = `${data.updatedAt} 取得`;
@@ -1518,10 +1643,49 @@
     if (newsLoaded) renderNewsList();
   }
 
+  function updateDigestButtonUI() {
+    const btn = document.getElementById("btn-digest-play");
+    if (currentTab === "custom" || !newsLoaded) {
+      btn.style.display = "none";
+      return;
+    }
+
+    const items = newsCache[currentTab] || [];
+    if (items.length === 0) {
+      btn.style.display = "none";
+      return;
+    }
+
+    const meta = TAB_META[currentTab];
+    const st = digestStatus[currentTab] || { ready: false, createdAt: "" };
+    const isReady = Boolean(st.ready || digestMemoryCache[currentTab]);
+    const count = Math.min(3, items.length);
+
+    btn.style.display = "flex";
+    btn.disabled = !isReady && remainingQuota <= 0;
+
+    document.getElementById("digest-btn-title").textContent =
+      `📻 ${meta.label}ニュースを一気聴き（割り込み無し）`;
+
+    const subEl = document.getElementById("digest-btn-sub");
+    const pillEl = document.getElementById("digest-btn-pill");
+
+    if (isReady) {
+      subEl.textContent = `本日のトップ${count}本を収録済${st.createdAt ? "（" + st.createdAt + "）" : ""}・待ち時間なしで即再生`;
+      pillEl.textContent = "⚡ 即再生・枠0回";
+      pillEl.classList.add("ready");
+    } else {
+      subEl.textContent = `最新トップ${count}本をまとめて収録（2回目以降は誰でも枠0回・即再生）`;
+      pillEl.textContent = "▶ 収録して聴く";
+      pillEl.classList.remove("ready");
+    }
+  }
+
   function renderNewsList() {
     if (currentTab === "custom") return;
     const meta = TAB_META[currentTab];
     document.getElementById("news-heading").textContent = meta.heading;
+    updateDigestButtonUI();
 
     const listEl = document.getElementById("news-list");
     const items = newsCache[currentTab] || [];
@@ -1597,6 +1761,7 @@
         stopListening();
         stopAllAudio();
         activeAiClip = null;
+        isDigestMode = false;
         currentTab = tab.dataset.tab;
         document.querySelectorAll(".genre-tab").forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
@@ -1619,10 +1784,13 @@
       fetchNewsAndQuota(true);
     });
 
+    document.getElementById("btn-digest-play").addEventListener("click", handleStartDigestBroadcast);
+
     document.getElementById("btn-back-lobby").addEventListener("click", () => {
       stopListening();
       stopAllAudio();
       activeAiClip = null;
+      isDigestMode = false;
       showLobby();
     });
 
@@ -1633,13 +1801,13 @@
     });
 
     document.getElementById("btn-voice-cutin").addEventListener("click", () => {
-      if (isBroadcasting || isGenerating) return;
+      if (isBroadcasting || isGenerating || isDigestMode) return;
       openCutinForm(false);
       startListening("cutin");
     });
 
     document.getElementById("btn-open-cutin").addEventListener("click", () => {
-      if (isBroadcasting || isGenerating) return;
+      if (isBroadcasting || isGenerating || isDigestMode) return;
       openCutinForm(true);
     });
 
@@ -1667,6 +1835,7 @@
   function showLobby() {
     document.getElementById("studio-section").style.display = "none";
     document.getElementById("interrupt-dock").style.display = "none";
+    document.getElementById("digest-topics-box").style.display = "none";
     closeCutinForm();
     setOnAir(false);
 
@@ -1680,26 +1849,49 @@
     }
   }
 
-  function showStudio(title, sourceLink) {
+  function showStudio(title, sourceLink, digestMode) {
+    isDigestMode = Boolean(digestMode);
     currentTopicTitle = title;
     displayedLog = [];
     document.getElementById("chat-log").innerHTML = "";
-    document.getElementById("studio-topic-title").textContent = "🎙️ " + title;
+    document.getElementById("studio-topic-title").textContent = (isDigestMode ? "📻 " : "🎙️ ") + title;
 
     const linkEl = document.getElementById("studio-source-link");
-    if (sourceLink) {
+    if (sourceLink && !isDigestMode) {
       linkEl.href = sourceLink;
       linkEl.style.display = "inline-block";
     } else {
       linkEl.style.display = "none";
     }
 
+    document.getElementById("digest-topics-box").style.display = "none";
     document.getElementById("news-panel").style.display = "none";
     document.getElementById("custom-panel").style.display = "none";
     document.getElementById("studio-section").style.display = "block";
-    document.getElementById("interrupt-dock").style.display = "block";
+    // 一気聴きモードでは割り込みバーを非表示にする
+    document.getElementById("interrupt-dock").style.display = isDigestMode ? "none" : "block";
     updateCutinDockState();
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function renderDigestTopicsBox(topics) {
+    const box = document.getElementById("digest-topics-box");
+    const list = document.getElementById("digest-topics-list");
+    if (!Array.isArray(topics) || topics.length === 0) {
+      box.style.display = "none";
+      return;
+    }
+    list.innerHTML = "";
+    topics.forEach((t, idx) => {
+      const row = document.createElement("div");
+      row.className = "digest-topic-row";
+      row.innerHTML = `
+        <span>${idx + 1}. ${escapeHtml(t.title)}</span>
+        ${t.link ? `<a class="news-ext-link" href="${escapeAttr(t.link)}" target="_blank" rel="noopener noreferrer">元記事 ↗</a>` : ""}
+      `;
+      list.appendChild(row);
+    });
+    box.style.display = "block";
   }
 
   function openCutinForm(focusInput) {
@@ -1813,7 +2005,110 @@
   }
 
   // =========================================================
-  // 放送開始（ニュース / 好きなテーマ / 割り込み）
+  // ★ 新機能：ニュース一気聴き（収録済みは即再生・枠0回）
+  // =========================================================
+  async function handleStartDigestBroadcast() {
+    if (isGenerating || currentTab === "custom") return;
+    const catKey = currentTab;
+    const meta = TAB_META[catKey];
+    const items = (newsCache[catKey] || []).slice(0, 3);
+    if (items.length === 0) return;
+
+    unlockAllAudio();
+
+    // 1) ブラウザ内キャッシュがあれば0秒即再生
+    if (digestMemoryCache[catKey]) {
+      const mem = digestMemoryCache[catKey];
+      showStudio(`${meta.label} ニュース一気聴き`, "", true);
+      renderDigestTopicsBox(mem.digest.topics);
+      sendGaEvent("play_digest", { category: catKey, cached: "memory" });
+      if (mem.blobUrl) {
+        startAiAudioClip(mem.blobUrl, mem.digest.lines);
+      } else {
+        startFallbackPlayback(mem.digest.lines);
+      }
+      return;
+    }
+
+    const st = digestStatus[catKey] || { ready: false };
+    if (!st.ready && remainingQuota <= 0) {
+      alert("本日の生放送枠は終了しました（明日0時に復活します）。");
+      return;
+    }
+
+    isGenerating = true;
+    showStudio(`${meta.label} ニュース一気聴き`, "", true);
+
+    let loadingEl = appendSystemNotice(
+      st.ready
+        ? "⚡ 収録済みダイジェストを読み込んでいます..."
+        : "🎙️ 本日のニュース3本を一気に収録しています（初回のみ約8〜12秒）..."
+    );
+
+    try {
+      let digestObj = null;
+      let wasCached = false;
+
+      // 2) まず収録済み（枠0回・GET）を取りに行く
+      if (st.ready) {
+        const res = await fetch(GAS_API_URL + "?action=digest&category=" + encodeURIComponent(catKey) + "&t=" + Date.now());
+        const data = await res.json();
+        if (data && data.ok && data.ready && data.digest) {
+          digestObj = data.digest;
+          wasCached = true;
+          if (typeof data.remaining === "number") updateQuotaUI(data.remaining, data.limit || dailyLimit);
+        }
+      }
+
+      // 3) 未収録なら初回のみPOSTで収録＆Googleドライブへ保存
+      if (!digestObj) {
+        loadingEl.textContent = "🎙️ 本日のニュース3本を一気に収録しています（初回のみ約8〜12秒）...";
+        const data = await postToGas({
+          mode: "digest",
+          category: catKey,
+          items: items
+        });
+        if (data && data.digest) {
+          digestObj = data.digest;
+          wasCached = Boolean(data.cached);
+        }
+      }
+
+      loadingEl.remove();
+      isGenerating = false;
+
+      if (!digestObj || !Array.isArray(digestObj.lines) || digestObj.lines.length === 0) {
+        return;
+      }
+
+      // 収録済みステータスを更新（2回目以降は即再生表示に）
+      digestStatus[catKey] = { ready: true, createdAt: digestObj.createdAt || "" };
+
+      const blobUrl = digestObj.audio ? audioPayloadToBlobUrl(digestObj.audio) : null;
+      digestMemoryCache[catKey] = { digest: digestObj, blobUrl: blobUrl };
+
+      renderDigestTopicsBox(digestObj.topics);
+      sendGaEvent("play_digest", { category: catKey, cached: wasCached ? "drive" : "fresh" });
+
+      if (blobUrl) {
+        startAiAudioClip(blobUrl, digestObj.lines);
+      } else {
+        if (digestObj.ttsError) {
+          appendSystemNotice("ℹ️ AI音声が混み合っていたため端末音声で再生しています");
+        }
+        startFallbackPlayback(digestObj.lines);
+      }
+    } catch (err) {
+      loadingEl.remove();
+      isGenerating = false;
+      alert("一気聴きの読み込みに失敗しました: " + err.message);
+    } finally {
+      isGenerating = false;
+    }
+  }
+
+  // =========================================================
+  // 通常放送（単体ニュース / 好きなテーマ / 割り込み）
   // =========================================================
   async function handleStartNewsBroadcast(newsItem, categoryLabel) {
     if (isGenerating) return;
@@ -1824,7 +2119,7 @@
 
     unlockAllAudio();
     isGenerating = true;
-    showStudio(newsItem.title, newsItem.link);
+    showStudio(newsItem.title, newsItem.link, false);
     const loadingEl = appendSystemNotice("🎙️ 2人が最新ニュースの掛け合いを収録しています（約5〜10秒）...");
     sendGaEvent("play_news", { category: currentTab });
 
@@ -1869,7 +2164,7 @@
     btn.disabled = true;
     btn.textContent = "収録中...";
 
-    showStudio(topic, "");
+    showStudio(topic, "", false);
     const loadingEl = appendSystemNotice("🎙️ 2人がテーマについて掛け合いを収録しています（約5〜10秒）...");
     sendGaEvent("generate_topic", { tab: "custom" });
 
@@ -1897,7 +2192,7 @@
   }
 
   async function handleInterruptSubmit() {
-    if (isGenerating || isBroadcasting) return;
+    if (isGenerating || isBroadcasting || isDigestMode) return;
     stopListening();
     const input = document.getElementById("cutin-input");
     const text = input.value.trim();
